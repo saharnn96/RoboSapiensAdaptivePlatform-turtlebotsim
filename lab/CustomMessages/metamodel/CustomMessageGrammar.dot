@@ -1,0 +1,40 @@
+
+    digraph textX {
+    fontname = "Bitstream Vera Sans"
+    fontsize = 8
+    node[
+        shape=record,
+        style=filled,
+        fillcolor=aliceblue
+    ]
+    nodesep = 0.3
+    edge[dir=black,arrowtail=empty]
+
+
+2210292244400[ label="{customMessage|}"]
+
+2210292245360[ label="{*Element|}"]
+
+2210292222320[ label="{Class|className: ID\lname: ID\l}"]
+
+2210292223280[ label="{List|className: ID\lname: ID\l}"]
+
+2210292247280[ label="{Variable|variable: Primitives\lname: ID\l}"]
+
+
+
+2210292244400 -> 2210292245360[arrowtail=diamond, dir=both, headlabel="elements 0..*"]
+2210292245360 -> 2210292247280 [dir=back]
+2210292245360 -> 2210292222320 [dir=back]
+2210292245360 -> 2210292223280 [dir=back]
+match_rules [ shape=plaintext, label=< <table>
+	<tr>
+		<td><b>Comment</b></td><td>\/\/.*$</td>
+	</tr>
+	<tr>
+		<td><b>Primitives</b></td><td>bool|byte|char|float32|float64|int8|uint8|int16|uint16|int32|uint32|int64|uint64|string|list</td>
+	</tr>
+</table> >]
+
+
+}

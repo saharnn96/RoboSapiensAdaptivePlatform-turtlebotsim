@@ -1,0 +1,29 @@
+logger:
+  path: "C:/Users/Bert/UAntwerpen/Documenten/00_UA/02_Projects/01_RoboSAPIENS/99_RemoteRepositories/RoboSapiensAdaptivePlatform/RoboSapiensAdaptivePlatform/Runtime/tests/output/logs/sys.log"
+
+com:
+  messages:
+    - message:
+        type : "data"
+        name : "temperature_average"
+        class : "Property"
+        topic : "/temperature"
+        QoS: 10
+        source : "application"
+        destination : "MAPE"
+    - message:
+        type : "data"
+        name : "heater"
+        class : "Property"
+        topic : "/heater"
+        QoS: 10
+        source : "application"
+        destination : "MAPE"
+    - message:
+        type : "event"
+        name : "diagnosisTrigger"
+        class : "event"
+        topic : "/triggerDiagnosis"
+        QoS: 10
+        source : "MAPE"
+        destination : "application"
