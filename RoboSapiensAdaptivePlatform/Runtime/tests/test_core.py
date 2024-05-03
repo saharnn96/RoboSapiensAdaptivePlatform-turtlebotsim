@@ -47,7 +47,7 @@ class testCore(TestCase):
         RaP.RaPEnterInitializationMode()
         RaP.RaPExitInitializationMode()
 
-        poi = Proptery()
+        poi = Property()
         poi.name = "temperature_average"
         poi.value = 15.9
         poi.min = 0.0

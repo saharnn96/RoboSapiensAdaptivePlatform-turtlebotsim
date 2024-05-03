@@ -1,29 +1,27 @@
 logger:
   path: "C:/Users/Bert/UAntwerpen/Documenten/00_UA/02_Projects/01_RoboSAPIENS/99_RemoteRepositories/RoboSapiensAdaptivePlatform/RoboSapiensAdaptivePlatform/Runtime/tests/output/logs/sys.log"
 
-com:
-  messages:
-    - message:
+
+probe:
+  properties:
+    - property:
         type : "data"
-        name : "temperature_average"
-        class : "Property"
-        topic : "/temperature"
+        name : "RobotOdometry"
+        class : "RobotPose"
+        topic : "/RobotOdometry"
         QoS: 10
-        source : "application"
-        destination : "MAPE"
-    - message:
-        type : "data"
-        name : "heater"
-        class : "Property"
-        topic : "/heater"
+    - property:
+        type: "data"
+        name: "DetectedPersons"
+        class: "ObjectsStamped"
+        topic: "/DetectedPersons"
         QoS: 10
-        source : "application"
-        destination : "MAPE"
-    - message:
-        type : "event"
-        name : "diagnosisTrigger"
-        class : "event"
-        topic : "/triggerDiagnosis"
+
+effector:
+  endpoints:
+    - endpoint:
+        type: "action"
+        name: "GenericAction"
+        class: "Action"
+        topic: "/RaP_Effector_action"
         QoS: 10
-        source : "MAPE"
-        destination : "application"

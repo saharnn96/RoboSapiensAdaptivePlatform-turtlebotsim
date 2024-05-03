@@ -1,5 +1,5 @@
 from RoboSapiensAdaptivePlatform.utils.constants import *
-class Proptery():
+class Property():
     name="tbd"
     description="tbd"
     value=0.0
@@ -19,6 +19,7 @@ class ComponentStatus():
 class Action(object):
     def __init__(self,ID=actionType.ADAPTATIONTYPE,description="tbd",propertyList=None):
 
+        self._name = "tbd"
         self._ID= ID
         self._UUID = "tbd"
         self._description=description
@@ -27,6 +28,15 @@ class Action(object):
         else:
             self._propertyList = []
 
+    @property
+    def name(self):
+        """The name (read-only)."""
+        return self._name
+
+    @name.setter
+    def name(self, cmp):
+        """The ID (write)."""
+        self._name = cmp
     @property
     def ID(self):
         """The ID (read-only)."""
@@ -106,6 +116,17 @@ class ObjectsStamped(object):
     def objectList(self, cmp):
         """The objectList (write)."""
         self._objectList = cmp
+
+    def instantiate(self,decodedJSON):          #TODO: this initialize function needs to be generalized to use custom classes
+        objList = []
+        for p in decodedJSON._objectList:
+            obj = Object(label=p["_label"], label_id=p["_label_id"], confidence=p["_confidence"], position=p["_position"],velocity=p["_velocity"], trackingState=p["_trackingState"], actionState=p["_actionState"])
+            objList.append(obj)
+
+        self._name = decodedJSON._name
+        self._ID = decodedJSON._ID
+        self._objectList = objList
+
 
 class Object(object):
     def __init__(self,label='human',label_id='tbd',confidence=99,position=[0.0,0.0,0.0],velocity=[0.0,0.0,0.0],trackingState=trackingState.SEARCHING,actionState=actionState.IDLE):
@@ -189,6 +210,7 @@ class Object(object):
         self._actionState = cmp
 
 
+
 class RobotPose(object):
     def __init__(self,name='ROB1',frameID='FID_001',confidence=99,position=[0.0,0.0,0.0],orientation=[0.0,0.0,0.0,0.0],linear=[0.0,0.0,0.0], angular=[0.0,0.0,0.0]):
 
@@ -270,3 +292,43 @@ class RobotPose(object):
     def angular(self, cmp):
         """The angular (TWIST) (write)."""
         self._angular = cmp
+
+    def instantiate(self,decodedJSON):                  #TODO: this initialize function needs to be generalized to use custom classes
+        self._name = decodedJSON._name
+        self._frameID = decodedJSON._frameID
+        self._confidence = decodedJSON._confidence
+        self._position = decodedJSON._position
+        self._orientation = decodedJSON._orientation
+        self._linear = decodedJSON._linear
+        self._angular = decodedJSON._angular
+
+
+class LogMessage(object):
+    def __init__(self,name='tbd',message="tbd"):
+
+        self._name = name
+        self._message= message
+
+    @property
+    def name(self):
+        """The name (read-only)."""
+        return self._name
+
+    @name.setter
+    def name(self, cmp):
+        """The ID (write)."""
+        self._name = cmp
+
+    @property
+    def message(self):
+        """The message (read-only)."""
+        return self._message
+
+    @message.setter
+    def message(self, cmp):
+        """The message (write)."""
+        self._message = cmp
+
+    def instantiate(self,decodedJSON):                  #TODO: this initialize function needs to be generalized to use custom classes
+        self._name = decodedJSON._name
+        self._message = decodedJSON._message

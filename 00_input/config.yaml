@@ -15,6 +15,12 @@ probe:
         name: "DetectedPersons"
         class: "ObjectsStamped"
         topic: "/DetectedPersons"
+        QoS: 
+    - property:
+        type: "data"
+        name: "Scan"
+        class: "ObjectsStamped"
+        topic: "/Scan"
         QoS: 10
 
 effector:

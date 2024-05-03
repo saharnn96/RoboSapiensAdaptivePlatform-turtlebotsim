@@ -52,7 +52,7 @@ class Telegraf(TriggeredNode):
             if route["name"] == name:
                 if route["type"]==knowledgeType.PROPERTY:  #TODO: extend to support other message types
                     found=True
-                    poi = Proptery()
+                    poi = Property()
                     poi.name = name
                     poi.value = value
                     poi.min = route["min"]

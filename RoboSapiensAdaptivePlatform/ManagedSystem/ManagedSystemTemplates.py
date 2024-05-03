@@ -10,6 +10,7 @@ from RoboSapiensAdaptivePlatform.utils.constants import *
 from RoboSapiensAdaptivePlatform.utils.timer import perpetualTimer
 from RoboSapiensAdaptivePlatform.ManagedSystem.RemoteProbes import MQTTProbe
 from RoboSapiensAdaptivePlatform.ManagedSystem.RemoteEffectors import MQTTEffector
+from RoboSapiensAdaptivePlatform.Runtime.RemoteLoggers import MQTTLogger
 
 
 class localManagedSystem(object):
@@ -70,11 +71,16 @@ class remoteManagedSystem(object):
         self._verbose = verbose
 
         # RoboSapiens Adaptive Platform elements
-        self._RaPLogger = None      #TODO: add remote logger (over MQTT??)
+        self._RaPLogger = MQTTLogger(config=config,verbose=verbose)
         self._RaPEffector = MQTTEffector(logger=logger,knowledgeBase=None,config=config,verbose=verbose)
         self._RaPProbe =  MQTTProbe(config=config,verbose=verbose)
 
         # AUTO-CONFIG
+        self._RaPLogger.RaPEnterConfigurationMode()
+        self._RaPLogger.RaPExitConfigurationMode()
+        self._RaPLogger.RaPEnterInitializationMode()
+        self._RaPLogger.RaPExitInitializationMode()
+
         self._RaPProbe.RaPEnterConfigurationMode()
         self._RaPProbe.RaPExitConfigurationMode()
         self._RaPProbe.RaPEnterInitializationMode()

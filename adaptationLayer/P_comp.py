@@ -45,19 +45,18 @@ class plan(TriggeredNode):
         return True
 
     def dummyPlan(self):
-        #DUMMY PLAN => IF LIGHT IS ON, TURN OFF, AND IF OFF, TURN ON
+        #DUMMY PLAN => SLOW DOWN THE ROBOT IF ANOMALY IS DETECTED
         _plan = None
 
-        light, history1 = self.knowledge.read("light", queueSize=1)
-
-        poi = Proptery()
-        poi.name = 'light'
-        poi.value = 1 - history1[0]
-        poi.description = 'Toggle light'
+        poi = Property()
+        poi.name = 'target_speed'
+        poi.value = 1.0
+        poi.description = 'Slow down robot'
 
         _plan = Action()
+        _plan.name = 'SpeedAdaptationAction'
         _plan.ID = actionType.ADAPTATIONTYPE
-        _plan.description = "DUMMY_ADAPTATION_LIGHT"
+        _plan.description = "SPEED ADAPTATION"
         _plan.propertyList = [poi]
 
         return _plan

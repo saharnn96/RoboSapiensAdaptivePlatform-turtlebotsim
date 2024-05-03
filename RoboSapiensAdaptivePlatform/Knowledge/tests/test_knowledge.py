@@ -22,13 +22,13 @@ class testCore(TestCase):
         KM.RaPEnterInitializationMode()
         KM.RaPExitInitializationMode()
 
-        poi = Proptery()
+        poi = Property()
         poi.name = "temperature_average"
         poi.value = 55.0
         poi.min = 0.0
         poi.max = 50.0
 
-        fan = Proptery()
+        fan = Property()
         fan.name = "fan_control"
         fan.value = 0
         fan.min = 0

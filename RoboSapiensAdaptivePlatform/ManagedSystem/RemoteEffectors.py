@@ -64,7 +64,7 @@ class MQTTEffector(TriggeredNode):
             self._verbose:print("Subscription cannot be added, com module not in config mode")
 
 
-    def _decode(self,topic,message):                        #TODO: THIS NEEDS TO BE GENERALIZED -> class passing not working perfectly over MQTT yet
+    def _decode(self,topic,message):                        #TODO: THIS NEEDS TO BE GENERALIZED -> class passing not working perfectly over MQTT yet (SEE lab/communication/Class-passing
         for subscription in self._subscriptionList:
             if topic == subscription["topic"]:
                 cls = subscription["class"]
@@ -72,7 +72,7 @@ class MQTTEffector(TriggeredNode):
                 actionRaw = type(cls, (object,), json.loads(message.payload))
                 pList = []
                 for p in actionRaw._propertyList:
-                    poi = Proptery()
+                    poi = Property()
                     poi.name = p["name"]
                     poi.value = p["value"]
                     poi.description = p["description"]

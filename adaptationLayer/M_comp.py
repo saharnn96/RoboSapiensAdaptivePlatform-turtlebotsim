@@ -19,6 +19,7 @@ class monitor(TriggeredNode):
         super().__init__(logger=logger,knowledge = knowledgeBase,verbose=verbose)
 
         self._name = "monitor"
+        self._counter = 0       #DUMMY ANOMALY!
 
     # ------------------------------------------------------------------------------------------------
     # -------------------------------------INTERNAL FUNCTIONS----------------------------------------
@@ -30,11 +31,16 @@ class monitor(TriggeredNode):
         PERSON_DETECT, PERSON_DETECT_history = self.knowledge.read("DetectedPersons", queueSize=2)
 
         # 2. PERFORM MONITORING
-        #!!--------------DUMMY---------------!!
-        _status = monitorStatus.NORMAL
-        _accuracy = 1.0
+        #!!--------------USER IMPLEMENTATION---------------!!
+        self._counter = self._counter+1
+        if self._counter == 4:
+            _status = monitorStatus.ANOMALY
+            _accuracy = 1.0
+        else:
+            _status = monitorStatus.NORMAL
+            _accuracy = 1.0
 
-        #!!--------------DUMMY - --------------!!
+        #!!--------------USER IMPLEMENTATION--------------!!
 
         # 3. SIGNAL MONITORING STATE VIA KNOWLEDGE
         self.RaPSignalStatus(component=adaptivityComponents.MONITOR,status=_status,accuracy=_accuracy)

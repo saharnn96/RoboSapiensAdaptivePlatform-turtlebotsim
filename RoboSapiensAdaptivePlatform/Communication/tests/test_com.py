@@ -22,12 +22,18 @@ class testCom(TestCase):
         com.RaPEnterInitializationMode()
         com.RaPExitInitializationMode()
 
-        poi = Proptery()
-        poi.name = "temperature_average"
-        poi.value = 55.0
-        poi.min = 0.0
-        poi.max = 50.0
-        com.publish(cls=poi)
+        poi = Property()
+        poi.name = 'target_speed'
+        poi.value = 1.0
+        poi.description = 'Slow down robot'
+
+        action2 = Action()
+        action2.name = 'SpeedAdaptationAction'
+        action2.ID = actionType.ADAPTATIONTYPE
+        action2.description = "SPEED ADAPTATION"
+        action2.propertyList = [poi]
+
+        com.publish(cls=action2)
 
         #CHECKS
         #self.assertTrue(logger.IsEnabled(),True)
@@ -36,7 +42,7 @@ class testCom(TestCase):
 
 
     def test_Receive(self):
-        com = CommunicationManager(mode=comMode.APPLICATION,config="input/config.yaml",communicationProtocol=communicationProtocol.MQTT,verbose=False)
+        com = CommunicationManager(mode=comMode.APPLICATION,config="input/config.yaml",communicationProtocol=communicationProtocol.MQTT,verbose=True)
 
         #CONFIGURE THE COM
         com.RaPEnterConfigurationMode()
