@@ -673,6 +673,10 @@ class remoteCore(Node):
             detections = ObjectsStamped()
             detections.instantiate(messageRAW)
             self.telegraf.digest(detections.name, detections)
+        if topic == "/Scan":
+            Lidar = LidarRange()
+            Lidar.instantiate(messageRAW)
+            self.telegraf.digest(Lidar.name, Lidar)
         if topic == "/ManagedSystemLog":
             logmsg = LogMessage()
             logmsg.instantiate(messageRAW)

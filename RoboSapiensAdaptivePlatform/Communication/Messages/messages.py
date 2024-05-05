@@ -128,6 +128,57 @@ class ObjectsStamped(object):
         self._objectList = objList
 
 
+class LidarRange(object):
+    def __init__(self,name='tbd',ID="tbd",objectList=None):
+
+        self._name= name
+        self._ID= ID
+        if objectList is not None:
+            self._objectList=objectList
+        else:
+            self._objectList = []
+
+    @property
+    def ID(self):
+        """The ID (read-only)."""
+        return self._ID
+
+    @ID.setter
+    def ID(self, cmp):
+        """The ID (write)."""
+        self._ID = cmp
+
+    @property
+    def name(self):
+        """The name (read-only)."""
+        return self._name
+
+    @name.setter
+    def name(self, cmp):
+        """The ID (write)."""
+        self._name = cmp
+    @property
+    def objectList(self):
+        """The objectList (read-only)."""
+        return self._objectList
+
+    @objectList.setter
+    def objectList(self, cmp):
+        """The objectList (write)."""
+        self._objectList = cmp
+
+    def instantiate(self,decodedJSON):          #TODO: this initialize function needs to be generalized to use custom classes
+        objList = []
+        for p in decodedJSON._objectList:
+            obj = Object(label=p["_label"], label_id=p["_label_id"], confidence=p["_confidence"], position=p["_position"],velocity=p["_velocity"], trackingState=p["_trackingState"], actionState=p["_actionState"])
+            objList.append(obj)
+
+        self._name = decodedJSON._name
+        self._ID = decodedJSON._ID
+        self._objectList = objList
+
+        
+
 class Object(object):
     def __init__(self,label='human',label_id='tbd',confidence=99,position=[0.0,0.0,0.0],velocity=[0.0,0.0,0.0],trackingState=trackingState.SEARCHING,actionState=actionState.IDLE):
 

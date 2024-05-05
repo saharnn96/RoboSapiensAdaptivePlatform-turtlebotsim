@@ -39,7 +39,7 @@ RaP.execute = E
 
 # --- configure telegraf ---
 telegraf = Telegraf(logger=RaP.logger,knowledgeManagement=RaP.knowledgeManagement,verbose=verbose)
-telegraf.gatewayMatrix = [{"name" : "DetectedPersons","type":knowledgeType.DETECTEDOBJECTS},{"name" : "RobotOdometry","type":knowledgeType.ROBOTODOMETRY}]
+telegraf.gatewayMatrix = [{"name" : "DetectedPersons","type":knowledgeType.DETECTEDOBJECTS},{"name" : "RobotOdometry","type":knowledgeType.ROBOTODOMETRY},{"name" : "LidarRange","type":knowledgeType.DETECTEDOBJECTS}]
 RaP.telegraf = telegraf
 
 # --- MQTT CONNTECTED MANAGED SYSTEM -> START Turtlebot_SafePerson.py first ---

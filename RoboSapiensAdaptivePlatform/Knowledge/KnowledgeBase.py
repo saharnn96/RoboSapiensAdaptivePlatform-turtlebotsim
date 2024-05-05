@@ -238,6 +238,8 @@ class KnowledgeBase(object):
         self._robotOdometryList = []
 
 
+        # List of Lidar Range
+        self._robotScanList = []
 
     #------------------------------------------------------------------------------------------------
     # -------------------------------------INTERFACE FUNCTIONS---------------------------------------
@@ -275,7 +277,8 @@ class KnowledgeBase(object):
         elif isinstance(cls, RobotPose):
             self._robotOdometryList.append(cls)
 
-
+        elif isinstance(cls,LidarRange): 
+            self._robotScanList.append(cls)
 
 
     def read(self,name,queueSize):

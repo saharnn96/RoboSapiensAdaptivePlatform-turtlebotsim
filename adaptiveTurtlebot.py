@@ -5,22 +5,22 @@ from turtlebot4_sim.turtlebot4.AdaptiveTurtlebot4 import adaptiveTurtlebot4
 environment = Environment(path_to_png="00_input/World_simple.png")
 
 # --- load persons walking in the environment
-# person_anomly = Person(x_start=100.0,y_start=250.0,theta_start=0.0,x_goal=150.0,y_goal=200.0,theta_goal=3.14,v=3.0,UID="PERSON_ANOMALY")    # HEADING TOWARDS THE ROBOT = ANOMALY
-# person_anomly.environment = environment
+person_anomly = Person(x_start=100.0,y_start=250.0,theta_start=0.0,x_goal=150.0,y_goal=200.0,theta_goal=3.14,v=3.0,UID="PERSON_ANOMALY")    # HEADING TOWARDS THE ROBOT = ANOMALY
+person_anomly.environment = environment
 
-# person_normal = Person(x_start=100.0,y_start=250.0,theta_start=0.0,x_goal=200.0,y_goal=150.0,theta_goal=3.14,v=2.5,UID="PERSON_NORMAL1")    # PASSING THE ROBOT = NORMAL
-# person_normal.environment = environment
+person_normal = Person(x_start=100.0,y_start=250.0,theta_start=0.0,x_goal=200.0,y_goal=150.0,theta_goal=3.14,v=2.5,UID="PERSON_NORMAL1")    # PASSING THE ROBOT = NORMAL
+person_normal.environment = environment
 
 # --- load the turtlebot 4 robot ---
 robot = adaptiveTurtlebot4(x_start=200.0,y_start=50.0,theta_start=3.14,config='00_input/config.yaml',verbose=False)
 robot.environment = environment
 
 
-# robot._personList.append(person_anomly)
-# robot._personList.append(person_normal)
+robot._personList.append(person_anomly)
+robot._personList.append(person_normal)
 
-# # NORMAL PERSON START
-# person_normal.start()
+# NORMAL PERSON START
+person_normal.start()
 
 # --- perform actions ---
 while True:
@@ -34,7 +34,7 @@ while True:
     # robot._lidar.activateOverlay(overlay=[[0.0,0.5],[2.0,3.0]])
     robot._lidar.activateOverlay(overlay=[[0.0, 0.5,5.0], [1.0, 5.0,10.0]])      #[[angle_min, angle_max,distance]]
     # # ANOMALY TRIGGERING LIDAR OCCLUSION
-    # person_anomly.start()
+    person_anomly.start()
     # second waypoint
     robot.determine_waypoints(x_goal=100.0, y_goal=250.0)
     robot.navigate_waypoints()
