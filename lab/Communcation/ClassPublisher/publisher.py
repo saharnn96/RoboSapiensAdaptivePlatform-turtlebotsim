@@ -4,7 +4,7 @@ from RoboSapiensAdaptivePlatform.Communication.Messages.messages import *
 from RoboSapiensAdaptivePlatform.utils.CommunicationInterfaces import MQTTInterface
 
 
-poi = Proptery()
+poi = Property()
 poi.name='target_speed'
 poi.value = 1.0
 poi.description = 'Slow down robot'

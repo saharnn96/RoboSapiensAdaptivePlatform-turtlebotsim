@@ -98,4 +98,9 @@ class knowledgeType():
     DETECTEDOBJECTS="ObjectsStamped"
     ROBOTODOMETRY = "RobotPose"
 
+class communicationEndPointStatus():
+    IDLE = "idle"
+    RUNNING = "running"
+    ERROR = "error" #THIS CAN BE EXTENDED WITH ID OF THE ERROR
+
 

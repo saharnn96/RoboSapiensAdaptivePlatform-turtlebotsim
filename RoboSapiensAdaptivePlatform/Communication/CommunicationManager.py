@@ -68,14 +68,14 @@ class CommunicationManager(Node):
     #------------------------------------------------------------------------------------------------
     #-------------------------------------INTERFACE FUNCTIONS---------------------------------------
     #------------------------------------------------------------------------------------------------
-    def create_subscription(self,cls=Proptery,name="",topic='topic',QoS=10):
+    def create_subscription(self, cls=Property, name="", topic='topic', QoS=10):
         if self._state == genericNodeStates.CONFIGURATION_MODE:
             self._subscriptionList.append({'name': name, 'class': cls, 'topic': topic})
             self._subscriptionListTopics.append(topic)
         else:
             self._verbose:print("Subscription cannot be added, com module not in config mode")
 
-    def create_publisher(self,cls=Proptery,name="",topic='topic',QoS=10):
+    def create_publisher(self, cls=Property, name="", topic='topic', QoS=10):
         if self._state == genericNodeStates.CONFIGURATION_MODE:
             self._publishList.append({'name': name, 'class': cls, 'topic': topic})
         else:
@@ -95,8 +95,17 @@ class CommunicationManager(Node):
     # ------------------------------------------------------------------------------------------------
     # -------------------------------------INTERNAL FUNCTIONS----------------------------------------
     # ------------------------------------------------------------------------------------------------
-    def _messageReceiveCallback(self):
-        if self._verbose:print("TO BE IMPLEMENTED")
+    def _messageReceiveCallback(self,message):
+        if self._verbose:print("Message received - overload for reactive dispatching")
+
+        for subscription in self._subscriptionList:
+            if message.topic == subscription["topic"]:    #TODO: CHECK IF OK
+                rawMessage = self._decode(topic=message.topic,message=message)
+                self._dispatch([message.topic,rawMessage])
+
+    def _dispatch(self,args):
+        if self._verbose:print("Message dispatching function - overload for routing to correct software component")
+        #TODO: Route the received message, function will be overloaded in core
 
     def _encode(self,message):
         return json.dumps(message, default=lambda o: o.__dict__,sort_keys=True, indent=4)
@@ -115,12 +124,16 @@ class CommunicationManager(Node):
             self._publisher = MQTTInterface(name="MQTTPublisher", VERBOSE=self._verbose)
             # Subscriber
             self._subscriber = MQTTInterface(name="MQTTSubscriber", subscriptions=self._subscriptionListTopics, VERBOSE=self._verbose)
+            self._subscriber.reactiveInput = True
+            self._subscriber._messageReceiveCallback = self._messageReceiveCallback
         else:
             if self._RaPlogger is not None: self._RaPlogger.log(self.name+"["+self._mode+"] entered INITIALIZATION mode - default(MQTT)")
             #Publisher
             self._publisher = MQTTInterface(name="MQTTPublisher", VERBOSE=self._verbose)
             #Subscriber
             self._subscriber = MQTTInterface(name="MQTTSubscriber", subscriptions=[],VERBOSE=self._verbose)
+            self._subscriber.reactiveInput = True
+            self._subscriber._messageReceiveCallback = self._messageReceiveCallback
 
     def _ExitInitializationModeFcn(self):
         if self._communicationProtocol == communicationProtocol.MQTT:
@@ -140,11 +153,22 @@ class CommunicationManager(Node):
         if self._RaPlogger is not None:self._RaPlogger.log(self.name+"["+self._mode+"] entered CONFIGURATION mode")
         with open(self._cfg, 'r') as file:
             cfg = yaml.safe_load(file)
-            for msg in cfg["com"]["messages"]:
-                message = msg["message"]
-                if message["destination"] == self._mode:
-                    self.create_subscription(cls=message["class"],name=message["name"],topic=message["topic"],QoS=message["QoS"])
-                elif message["source"]== self._mode:
-                    self.create_publisher(cls=message["class"], name=message["name"], topic=message["topic"],QoS=message["QoS"])
+            #for msg in cfg["com"]["messages"]:
+            #    message = msg["message"]
+            #    if message["destination"] == self._mode:
+            #        self.create_subscription(cls=message["class"],name=message["name"],topic=message["topic"],QoS=message["QoS"])
+            #    elif message["source"]== self._mode:
+            #        self.create_publisher(cls=message["class"], name=message["name"], topic=message["topic"],QoS=message["QoS"])
 
+            for msg in cfg["effector"]["endpoints"]:
+                p = msg["endpoint"]
+                self.create_publisher(cls=p["class"], name=p["name"], topic=p["topic"],QoS=p["QoS"])
+
+            for msg in cfg["probe"]["properties"]:
+                p = msg["property"]
+                self.create_subscription(cls=p["class"], name=p["name"], topic=p["topic"],QoS=p["QoS"])
+
+            for msg in cfg["logger"]["endpoints"]:
+                p = msg["endpoint"]
+                self.create_subscription(cls=p["class"], name=p["name"], topic=p["topic"],QoS=p["QoS"])
 

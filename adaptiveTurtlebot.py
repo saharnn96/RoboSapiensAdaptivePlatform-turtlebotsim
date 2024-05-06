@@ -12,8 +12,10 @@ person_normal = Person(x_start=100.0,y_start=250.0,theta_start=0.0,x_goal=200.0,
 person_normal.environment = environment
 
 # --- load the turtlebot 4 robot ---
-robot = adaptiveTurtlebot4(x_start=200.0,y_start=50.0,theta_start=3.14,config='input/config.yaml',verbose=False)
+robot = adaptiveTurtlebot4(x_start=200.0,y_start=50.0,theta_start=3.14,config='00_input/config.yaml',verbose=False)
 robot.environment = environment
+
+
 robot._personList.append(person_anomly)
 robot._personList.append(person_normal)
 
@@ -23,16 +25,20 @@ person_normal.start()
 # --- perform actions ---
 while True:
 
+    # robot._lidar.activateOverlay(overlay=[[0.0, 0.5,5.0], [1.0, 4.0,10.0]])      #[[angle_min, angle_max,distance]]
+
     # initial waypoint
     robot.determine_waypoints(x_goal=150.0, y_goal=200.0)
     robot.navigate_waypoints()
-
-    # ANOMALY TRIGGERING PERSON START
+    
+    # robot._lidar.activateOverlay(overlay=[[0.0,0.5],[2.0,3.0]])
+    robot._lidar.activateOverlay(overlay=[[0.0, 0.5,5.0], [1.0, 5.0,10.0]])      #[[angle_min, angle_max,distance]]
+    # # ANOMALY TRIGGERING LIDAR OCCLUSION
     person_anomly.start()
-
     # second waypoint
     robot.determine_waypoints(x_goal=100.0, y_goal=250.0)
     robot.navigate_waypoints()
+
 
     # initial waypoint
     robot.determine_waypoints(x_goal=200.0, y_goal=50.0)

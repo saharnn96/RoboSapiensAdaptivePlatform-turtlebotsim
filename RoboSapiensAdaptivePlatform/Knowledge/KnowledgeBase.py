@@ -80,7 +80,7 @@ class KnowledgeBase_Property(object):
 
 class KnowledgeBase_Action(object):
 
-    def __init__(self,ID='tbd',description = 'tbd',propertyList= None,retention=1000):
+    def __init__(self,ID='tbd',name='tbd',description = 'tbd',propertyList= None,retention=1000):
         """Initialize the Knowledge Base action component.
 
                 Parameters
@@ -98,6 +98,7 @@ class KnowledgeBase_Action(object):
 
                 """
         self._ID=ID
+        self._name = name
         self._description=description
         if propertyList is None:
             self._propertyList=[]
@@ -106,12 +107,17 @@ class KnowledgeBase_Action(object):
 
         self._isValid = False
         str = ID+"/"+description
-        self._uuid = hashlib.sha256(str.encode())  #Unique ID for checking of action is executed
+        self._uuid = hashlib.sha256(str.encode()).__str__()  #TODO:Unique ID for checking of action is executed -> hashlib not serializeble!!
 
     @property
     def ID(self):
         """The ID (read-only)."""
         return self._ID
+
+    @property
+    def name(self):
+        """The name (read-only)."""
+        return self._name
 
     @property
     def description(self):
@@ -232,6 +238,8 @@ class KnowledgeBase(object):
         self._robotOdometryList = []
 
 
+        # List of Lidar Range
+        self._robotScanList = []
 
     #------------------------------------------------------------------------------------------------
     # -------------------------------------INTERFACE FUNCTIONS---------------------------------------
@@ -239,7 +247,7 @@ class KnowledgeBase(object):
     def write(self,cls):
         """Function to write knowledge to the knowlegde base."""
         found = False
-        if isinstance(cls, Proptery):
+        if isinstance(cls, Property):
             for p in self._PropertyList:
                 if p.name == cls.name:
                     found=True
@@ -261,7 +269,7 @@ class KnowledgeBase(object):
 
         elif isinstance(cls,Action):
             self._action = None
-            self._action = KnowledgeBase_Action(ID=cls.ID,description=cls.description,propertyList=cls.propertyList)
+            self._action = KnowledgeBase_Action(ID=cls.ID,name=cls.name,description=cls.description,propertyList=cls.propertyList)
 
         elif isinstance(cls, ObjectsStamped):
             self._objectDetectedList.append(cls)
@@ -269,7 +277,8 @@ class KnowledgeBase(object):
         elif isinstance(cls, RobotPose):
             self._robotOdometryList.append(cls)
 
-
+        elif isinstance(cls,LidarRange): 
+            self._robotScanList.append(cls)
 
 
     def read(self,name,queueSize):
@@ -280,7 +289,7 @@ class KnowledgeBase(object):
         for p in self._PropertyList:
             if p.name == name:
                 found=True
-                cls = Proptery()
+                cls = Property()
                 cls.name = p.name
                 cls.value = p.value
                 cls.description = p.description
@@ -303,6 +312,7 @@ class KnowledgeBase(object):
             found = True
             cls = Action()
             cls.ID = self._action.ID
+            cls.name = self._action.name
             cls.description = self._action.description
             cls.propertyList = self._action.propertyList
             cls.UUID = self._action.uuid

@@ -384,6 +384,12 @@ class adaptiveTurtlebot4(remoteManagedSystem):
         objects = ObjectsStamped(name="DetectedPersons", ID="DETECT_1", objectList=detectedObjects)
         self.RaPProbe.push("DetectedPersons", objects)
 
+        # lidarRange = []
+        # for point in self._lidar.cloudPoint:
+        #     lidarRange.append(point)
+        Scan = ObjectsStamped(name="LidarRange", ID="MEASURE", objectList=self._lidar.cloudPoint)
+        self.RaPProbe.push("Scan", Scan)
+
 
     def _effector_spin_once(self,args):
         if self._verbose: print("Spin once function overloaded")

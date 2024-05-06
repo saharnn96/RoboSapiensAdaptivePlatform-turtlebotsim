@@ -12,39 +12,26 @@ from RoboSapiensAdaptivePlatform.utils.constants import *
 
 
 
-class Effector(TriggeredNode):
+class CommunicationEndpoint(TriggeredNode):
 
-    def __init__(self, logger = None,knowledgeBase = None,verbose=False):
+    def __init__(self, logger = None,knowledgeBase = None,communicationManagement=None,verbose=False):
         super().__init__(logger=logger,knowledge = knowledgeBase,verbose=verbose)
+
+        self._name = 'CommunicationEndpoint'
+        self._com = communicationManagement
 
     # ------------------------------------------------------------------------------------------------
     # -------------------------------------INTERNAL FUNCTIONS----------------------------------------
     # ------------------------------------------------------------------------------------------------
     def _SpinOnceFcn(self, args):
-        _status = effectorStatus.IDLE
-        # 1. DECODE THE ACTION TO BE PERFORMED
-        _rawAction = args   #PASSING ONLY THE ACTION
-        _actionType = _rawAction.ID
-        _description = _rawAction.description
-        _propertyList = _rawAction.propertyList
-
-
-        if _actionType == actionType.DIAGNOSISTYPE:
-            # 2a. PERFORM THE DIAGNOSE ACTION ROUTINE
-            self.logger.log("["+self._name+"] - "+'Diagnose action triggered - "'+_description+'"')
-            _status = effectorStatus.DIAGNOSIS
-
-        elif _actionType == actionType.ADAPTATIONTYPE:
-            # 2b. PERFORM THE ADAPTATION ACTION ROUTINE
-            self.logger.log("["+self._name+"] - "+'Adaptation action triggered - "'+_description+'"')
-            _status = effectorStatus.ADAPTATION
-
-            #perform adaptation for all properties provided
-
-
-        else:
-            self.logger.log("["+self._name+"] - "+"ERROR - Unknown action type")
-
+        _status = communicationEndPointStatus.RUNNING
+        self.logger.log("[" + self._name + "] - " + 'effector endpoint triggered - published via communication management"')
+        try:
+            self._com.publish(args)
+            _status = communicationEndPointStatus.IDLE
+        except Exception as e:
+            print(e)
+            _status = communicationEndPointStatus.ERROR
 
         # 3. RETURN STATUS OF THE ACTION
         return _status
