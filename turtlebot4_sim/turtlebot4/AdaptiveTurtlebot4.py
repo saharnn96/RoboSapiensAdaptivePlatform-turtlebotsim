@@ -384,10 +384,22 @@ class adaptiveTurtlebot4(remoteManagedSystem):
         objects = ObjectsStamped(name="DetectedPersons", ID="DETECT_1", objectList=detectedObjects)
         self.RaPProbe.push("DetectedPersons", objects)
 
-        # lidarRange = []
-        # for point in self._lidar.cloudPoint:
-        #     lidarRange.append(point)
-        Scan = ObjectsStamped(name="LidarRange", ID="MEASURE", objectList=self._lidar.cloudPoint)
+        Range = []
+   
+        for point in self._lidar.cloudPoint:
+            Range.append(point[0])
+        print(Range)    
+        Scan = LidarRange(name="LidarRange", ID="MEASURE",
+                          angleMin = self._lidar._angle_min,
+                           angleMax = self._lidar._angle_max,
+                           angleIncrement = self._lidar._angle_increment,
+                           timeIncrement = self._lidar._time_increment,
+                           rangeMin = self._lidar._range_min,
+                           rangeMax = self._lidar._range_max,
+                           scanTime = self._lidar._scan_time,
+                           rangeList=Range)
+
+
         self.RaPProbe.push("Scan", Scan)
 
 

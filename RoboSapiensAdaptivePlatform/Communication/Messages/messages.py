@@ -129,14 +129,24 @@ class ObjectsStamped(object):
 
 
 class LidarRange(object):
-    def __init__(self,name='tbd',ID="tbd",objectList=None):
 
-        self._name= name
+    def __init__(self,name='tbd',ID="tbd",
+                angleMin = 0.0, angleMax = 0.0,
+                angleIncrement = 0.0, timeIncrement = 0.0,
+                rangeMin = 0.0,rangeMax = 0.0, scanTime = 0.0, rangeList= None):
+        
+        self._name = name
         self._ID= ID
-        if objectList is not None:
-            self._objectList=objectList
-        else:
-            self._objectList = []
+        self._angleMin= angleMin
+        self._angleMax= angleMax
+        self._angleIncrement= angleIncrement
+        self._timeIncrement= timeIncrement
+        self._rangeMin= rangeMin
+        self._rangeMax= rangeMax
+        self._scanTime= scanTime
+        self._overlayActive= False
+        self._rangeList= rangeList
+
 
     @property
     def ID(self):
@@ -157,25 +167,111 @@ class LidarRange(object):
     def name(self, cmp):
         """The ID (write)."""
         self._name = cmp
+
     @property
-    def objectList(self):
-        """The objectList (read-only)."""
-        return self._objectList
+    def angleMin(self):
+        """The angleMin (read-only)."""
+        return self._angleMin
 
-    @objectList.setter
-    def objectList(self, cmp):
-        """The objectList (write)."""
-        self._objectList = cmp
+    @angleMin.setter
+    def angleMin(self, cmp):
+        """The angleMin (write)."""
+        self._angleMin = cmp
 
-    def instantiate(self,decodedJSON):          #TODO: this initialize function needs to be generalized to use custom classes
-        objList = []
-        for p in decodedJSON._objectList:
-            obj = Object(label=p["_label"], label_id=p["_label_id"], confidence=p["_confidence"], position=p["_position"],velocity=p["_velocity"], trackingState=p["_trackingState"], actionState=p["_actionState"])
-            objList.append(obj)
+    @property
+    def angleMax(self):
+        """The angleMax (read-only)."""
+        return self._angleMax
 
+    @angleMax.setter
+    def angleMax(self, cmp):
+        """The angleMax (write)."""
+        self._angleMax = cmp
+
+    @property
+    def angleIncrement(self):
+        """The angleIncrement (read-only)."""
+        return self._angleIncrement
+
+    @angleIncrement.setter
+    def angleIncrement(self, cmp):
+        """The angleIncrement (write)."""
+        self._angleIncrement = cmp
+
+    @property
+    def timeIncrement(self):
+        """The timeIncrement (read-only)."""
+        return self._timeIncrement
+
+    @timeIncrement.setter
+    def timeIncrement(self, cmp):
+        """The timeIncrement (write)."""
+        self._timeIncrement = cmp
+
+    @property
+    def rangeMin(self):
+        """The rangeMin (read-only)."""
+        return self._rangeMin
+
+    @rangeMin.setter
+    def rangeMin(self, cmp):
+        """The rangeMin (write)."""
+        self._rangeMin = cmp
+
+    @property
+    def rangeMax(self):
+        """The rangeMax (read-only)."""
+        return self._rangeMax
+
+    @rangeMax.setter
+    def rangeMax(self, cmp):
+        """The rangeMax (write)."""
+        self._rangeMax = cmp
+
+    @property
+    def scanTime(self):
+        """The scanTime (read-only)."""
+        return self._scanTime
+
+    @scanTime.setter
+    def scanTime(self, cmp):
+        """The scanTime (write)."""
+        self._scanTime = cmp
+
+    @property
+    def overlayActive(self):
+        """The overlayActive (read-only)."""
+        return self._overlayActive
+
+    @overlayActive.setter
+    def overlayActive(self, cmp):
+        """The overlayActive (write)."""
+        self._overlayActive = cmp
+
+    @property
+    def rangeList(self):
+        """The rangeList (read-only)."""
+        return self._rangeList
+
+    @rangeList.setter
+    def rangeList(self, cmp):
+        """The rangeList (write)."""
+        self._rangeList = cmp
+
+    def instantiate(self,decodedJSON):
         self._name = decodedJSON._name
         self._ID = decodedJSON._ID
-        self._objectList = objList
+        self._angleMin= decodedJSON._angleMin
+        self._angleMax= decodedJSON._angleMax
+        self._angleIncrement= decodedJSON._angleIncrement
+        self._timeIncrement= decodedJSON._timeIncrement
+        self._rangeMin= decodedJSON._rangeMin
+        self._rangeMax= decodedJSON._rangeMax
+        self._scanTime= decodedJSON._scanTime
+        # self._overlayActive= decodedJSON._overlayActive
+        self._rangeList= decodedJSON._rangeList
+
+
 
         
 
@@ -352,7 +448,6 @@ class RobotPose(object):
         self._orientation = decodedJSON._orientation
         self._linear = decodedJSON._linear
         self._angular = decodedJSON._angular
-
 
 class LogMessage(object):
     def __init__(self,name='tbd',message="tbd"):
