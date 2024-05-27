@@ -1,0 +1,8 @@
+portion==2.4.2
+pytest==8.2.0
+ipykernel==6.29.4
+matplotlib==3.5.1
+scipy==1.13.1
+PyYAML==6.0.1
+paho-mqtt==2.1.0
+pypng==0.20220715.0
