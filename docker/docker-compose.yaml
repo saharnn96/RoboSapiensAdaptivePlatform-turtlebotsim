@@ -1,0 +1,56 @@
+services:
+  emqx:
+    image: emqx:latest
+    restart: always
+    environment:
+      EMQX_NAME: emqx
+      EMQX_HOST: 127.0.0.1
+    volumes:
+      - vol-emqx-data:/opt/emqx/data
+      - vol-emqx-etc:/opt/emqx/etc
+      - vol-emqx-log:/opt/emqx/log
+    network_mode: host
+  rapdev:
+    command: sleep infinity
+    build:
+      context: .
+      args:
+        - UID=${UID:-1000}
+        - GID=${UID:-1000}
+        - USERNAME=${USERNAME:-devuser}
+    user: ${USERNAME:-devuser}
+    depends_on:
+      - emqx
+    network_mode: host
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/home/${USERNAME:-devuser}/.Xauthority
+    environment:
+      - DISPLAY=${DISPLAY}
+  rapdevnogpu:
+    extends: rapdev
+    environment:
+      - LIBGL_ALWAYS_SOFTWARE=1
+  rapdevmesa:
+    extends: rapdev
+    volumes:
+      - /dev/dri:/dev/dri
+  rapdevnvidia:
+    extends: rapdev
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    environment:
+      - NVIDIA_DRIVER_CAPABILITIES=all
+
+volumes:
+  vol-emqx-data:
+    name: foo-emqx-data
+  vol-emqx-etc:
+    name: foo-emqx-etc
+  vol-emqx-log:
+    name: foo-emqx-log
