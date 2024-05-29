@@ -1,12 +1,12 @@
-from typing import Iterable, Optional
+from typing import Iterator, Optional
 from collections import deque
 
 from .masks import ProbLidarMask, BoolLidarMask
 
 def sliding_prob_lidar_mask(
-            masks: Iterable[BoolLidarMask],
+            masks: Iterator[BoolLidarMask],
             window_size: int,
-        ) -> Iterable[ProbLidarMask]:
+        ) -> Iterator[ProbLidarMask]:
     window = deque(maxlen=None if window_size is None else window_size+1)
     prob_mask : ProbLidarMask | float = 0.0
 
@@ -39,9 +39,9 @@ def sliding_prob_lidar_mask(
         yield prob_mask
 
 def sliding_lidar_mask(
-            masks: Iterable[BoolLidarMask],
+            masks: Iterator[BoolLidarMask],
             window_size : int,
             cutoff : float,
-        ) -> Iterable[BoolLidarMask]:
+        ) -> Iterator[BoolLidarMask]:
     for m in sliding_prob_lidar_mask(masks, window_size=window_size):
         yield m >= cutoff

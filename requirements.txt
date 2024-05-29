@@ -6,3 +6,4 @@ scipy==1.13.1
 PyYAML==6.0.1
 paho-mqtt==2.1.0
 pypng==0.20220715.0
+pygtk

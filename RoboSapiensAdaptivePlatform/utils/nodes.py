@@ -231,15 +231,15 @@ class TriggeredNode(Node):
 		:rtype: bool
 		"""
         if self._state == genericNodeStates.IDLE or self._state == genericNodeStates.INITIALIZED:
-            try:
-                self._state = genericNodeStates.RUNNING     #TODO Sahar: Push to the state management, state management stores state in list (per component) with timestamp
-                _status = self._SpinOnceFcn(args=args)
-                self._state = genericNodeStates.IDLE        #TODO Sahar: Push to the state management, state management stores state in list (per component) with timestamp
-                return _status
-            except Exception as e:
-                if self._verbose:print('Faillure reason: %s', repr(e))
-                self._state = genericNodeStates.IDLE
-                return False
+            # try:
+            self._state = genericNodeStates.RUNNING     #TODO Sahar: Push to the state management, state management stores state in list (per component) with timestamp
+            _status = self._SpinOnceFcn(args=args)
+            self._state = genericNodeStates.IDLE        #TODO Sahar: Push to the state management, state management stores state in list (per component) with timestamp
+            return _status
+            # except Exception as e:
+            #     if self._verbose:print('Faillure reason: %s', repr(e))
+            #     self._state = genericNodeStates.IDLE
+            #     return False
         else:
             self._state = genericNodeStates.IDLE
             if self._verbose: print("ERROR - adaptation node not initialized")

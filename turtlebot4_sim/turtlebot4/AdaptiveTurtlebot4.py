@@ -44,8 +44,6 @@ class adaptiveTurtlebot4(remoteManagedSystem):
         self._description = "A simulation instance of the irobot create 3."
         self._verbose = verbose
 
-
-
         #sim parameters
         self._dt = 0.01
         self._show_animation = showAnimation
@@ -106,9 +104,6 @@ class adaptiveTurtlebot4(remoteManagedSystem):
         # periodic probing of the system
         self._probe_executor = perpetualTimer(1, self._probes_update)
         self._probe_executor.start()
-
-
-
 
 
     @property

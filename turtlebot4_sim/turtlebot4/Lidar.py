@@ -65,19 +65,23 @@ class LaserSensor:
         x1, y1 = self.position[0], self.position[1]
         for angle in np.linspace(0, 2 * math.pi, int(360/self.angularResolution), False):
             x2, y2 = (x1 + self.Range * math.cos(angle), y1 - self.Range * math.sin(angle))
-            for i in range(0, 100):
-                u = i / 100
-                x = int(x2 * u + x1 * (1 - u))
-                y = int(y2 * u + y1 * (1 - u))
-                if 0 < x < self.w and 0 < y < self.h:
-                    #check if occupied
-                    occupied = self.map.is_occupied((x, y))
-                    if occupied:
-                        distance = self.distance((x, y))
-                        output = uncertainty_add(distance, angle, self.sigma)
-                        output.append(self.position)
-                        data.append(output)
-                        break
+            for i in range(0, 101):
+                if i == 100:
+                    data.append([self._range_max, angle, self.position])
+                else:
+                    u = i / 100
+                    x = int(x2 * u + x1 * (1 - u))
+                    y = int(y2 * u + y1 * (1 - u))
+                    if 0 < x < self.w and 0 < y < self.h:
+                        #check if occupied
+                        occupied = self.map.is_occupied((x, y))
+                        if occupied:
+                            distance = self.distance((x, y))
+                            output = uncertainty_add(distance, angle, self.sigma)
+                            output.append(self.position)
+                            data.append(output)
+                            break
+            
 
         if len(data) > 0:
             self.cloudPoint = data
