@@ -1,3 +1,5 @@
+include:
+  - ../turtlebotrossim/docker/docker-compose.yaml
 services:
   emqx:
     image: emqx:latest
@@ -44,8 +46,15 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [ gpu ]
-    environment:
-      - NVIDIA_DRIVER_CAPABILITIES=all
+  devfullnogpu:
+    extends: rapdevnogpu
+    depends_on: simnogpu
+  devfulldevmesa:
+    extends: rapdevmesa
+    depends_on: simmesa
+  devfullnvidia:
+    extends: rapdevnvidia
+    depends_on: simnvidia
 
 volumes:
   vol-emqx-data:

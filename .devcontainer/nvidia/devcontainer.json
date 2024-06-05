@@ -3,7 +3,8 @@
 	"dockerComposeFile": "../../docker/docker-compose.yaml",
 	"service": "rapdevnvidia",
 	"runServices": [
-		"rapdevnvidia"
+		"rapdevnvidia",
+		"simnvidia"
 	],
 	"workspaceFolder": "/ws",
 	"shutdownAction": "stopCompose",

@@ -3,7 +3,8 @@
 	"dockerComposeFile": "../../docker/docker-compose.yaml",
 	"service": "rapdevmesa",
 	"runServices": [
-		"rapdevmesa"
+		"rapdevmesa",
+		"simmesa"
 	],
 	"workspaceFolder": "/ws",
 	"shutdownAction": "stopCompose",
