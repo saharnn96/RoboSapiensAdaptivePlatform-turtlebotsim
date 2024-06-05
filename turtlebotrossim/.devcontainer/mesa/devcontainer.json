@@ -1,0 +1,30 @@
+{
+    "name": "RoboSapiens WP3 Turtlebot (mesa)",
+    "dockerComposeFile": "../../docker/docker-compose.yaml",
+    "service": "devmesa",
+    "runServices": [
+        "devmesa"
+    ],
+    "workspaceFolder": "/ws",
+    "shutdownAction": "stopCompose",
+    "mounts": [
+        "source=${localWorkspaceFolder}/,target=/ws,type=bind,consistency=cached"
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "/bin/bash"
+                    }
+                }
+            }
+        },
+      "extensions": [
+        "ms-toolsai.jupyter",
+        "ms-toolsai.vscode-jupyter-powertoys",
+        "ms-python.python"
+      ]
+    }
+}
