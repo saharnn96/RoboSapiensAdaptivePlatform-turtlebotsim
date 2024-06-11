@@ -46,15 +46,24 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [ gpu ]
+  zenohbridge:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.zenohbridge
+      args:
+        - ROS_DISTRO=humble
+    image: base
+    command: python3 ROS2MqttBridge.py
+    network_mode: host
   devfullnogpu:
     extends: rapdevnogpu
-    depends_on: simnogpu
+    depends_on: simnogpu zenohbridge
   devfulldevmesa:
     extends: rapdevmesa
-    depends_on: simmesa
+    depends_on: simmesa zenohbridge
   devfullnvidia:
     extends: rapdevnvidia
-    depends_on: simnvidia
+    depends_on: simnvidia zenohbridge
 
 volumes:
   vol-emqx-data:

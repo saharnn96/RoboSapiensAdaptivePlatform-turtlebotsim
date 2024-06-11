@@ -4,7 +4,8 @@
 	"service": "rapdevnvidia",
 	"runServices": [
 		"rapdevnvidia",
-		"simnvidia"
+		"simnvidia",
+		"zenohbridge"
 	],
 	"workspaceFolder": "/ws",
 	"shutdownAction": "stopCompose",

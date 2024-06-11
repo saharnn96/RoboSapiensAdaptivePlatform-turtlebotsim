@@ -4,7 +4,8 @@
 	"service": "rapdevmesa",
 	"runServices": [
 		"rapdevmesa",
-		"simmesa"
+		"simmesa",
+		"zenohbridge"
 	],
 	"workspaceFolder": "/ws",
 	"shutdownAction": "stopCompose",
