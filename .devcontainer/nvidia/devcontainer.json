@@ -4,7 +4,6 @@
 	"service": "rapdevnvidia",
 	"runServices": [
 		"rapdevnvidia",
-		"simnvidia",
 		"rosmqttbridge"
 	],
 	"workspaceFolder": "/ws",

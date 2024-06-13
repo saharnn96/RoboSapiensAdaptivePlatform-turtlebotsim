@@ -11,7 +11,6 @@ services:
       - vol-emqx-data:/opt/emqx/data
       - vol-emqx-etc:/opt/emqx/etc
       - vol-emqx-log:/opt/emqx/log
-      - /dev/shm:/dev/shm
     network_mode: host
   rapdev:
     command: sleep infinity
@@ -56,6 +55,8 @@ services:
     image: base
     command: python3 ROS2MqttBridge.py
     network_mode: host
+    volumes:
+      - /dev/shm:/dev/shm
   devfullnogpu:
     extends: rapdevnogpu
     depends_on: simnogpu rosmqttbridge emqx

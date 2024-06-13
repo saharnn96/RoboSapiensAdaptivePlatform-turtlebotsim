@@ -4,7 +4,6 @@
 	"service": "rapdevmesa",
 	"runServices": [
 		"rapdevmesa",
-		"simmesa",
 		"rosmqttbridge"
 	],
 	"workspaceFolder": "/ws",
