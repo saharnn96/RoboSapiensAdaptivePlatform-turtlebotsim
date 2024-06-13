@@ -11,6 +11,7 @@ services:
       - vol-emqx-data:/opt/emqx/data
       - vol-emqx-etc:/opt/emqx/etc
       - vol-emqx-log:/opt/emqx/log
+      - /dev/shm:/dev/shm
     network_mode: host
   rapdev:
     command: sleep infinity
@@ -46,10 +47,10 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [ gpu ]
-  zenohbridge:
+  rosmqttbridge:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.zenohbridge
+      dockerfile: docker/Dockerfile.rosmqttbridge
       args:
         - ROS_DISTRO=humble
     image: base
@@ -57,13 +58,13 @@ services:
     network_mode: host
   devfullnogpu:
     extends: rapdevnogpu
-    depends_on: simnogpu zenohbridge
+    depends_on: simnogpu rosmqttbridge emqx
   devfulldevmesa:
     extends: rapdevmesa
-    depends_on: simmesa zenohbridge
+    depends_on: simmesa rosmqttbridge emqx
   devfullnvidia:
     extends: rapdevnvidia
-    depends_on: simnvidia zenohbridge
+    depends_on: simnvidia rosmqttbridge emqx
 
 volumes:
   vol-emqx-data:
