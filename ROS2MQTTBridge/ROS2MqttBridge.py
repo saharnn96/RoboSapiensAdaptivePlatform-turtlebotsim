@@ -3,9 +3,22 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
-from spin_interfaces.msg import SpinPeriodicCommands
+from spin_interfaces.msg import SpinCommand, SpinPeriodicCommands
 import json
 import time
+
+def json_to_spin_command(json_data : dict) -> SpinCommand:
+    spin_command = SpinCommand()
+    spin_command.omega = float(json_data['omega'])
+    spin_command.duration = json_data['duration']
+    return spin_command
+
+def json_to_spin_commands(json_data : dict) -> SpinPeriodicCommands:
+    spin_commands = SpinPeriodicCommands()
+    spin_commands.period = float(json_data['period'])
+    spin_commands.commands = [json_to_spin_command(command)
+                                     for command in json_data['commands']]
+    return spin_commands
 
 class ROS2MQTTBridge(Node):
     def __init__(self):
@@ -45,20 +58,17 @@ class ROS2MQTTBridge(Node):
 
     def publish_spin_config(self, spin_msg):
         # Publish spin configuration to MQTT
-        spin_config = SpinPeriodicCommands()
-        spin_config.spin_period = spin_msg['spin_period']
-        spin_config.commands = spin_msg['commands']
-        self.publisher.publish(spin_msg)
+        self.publisher.publish(json_to_spin_commands(spin_msg))
         self.get_logger().info('Published Spin configuration to ROS2.')
 
-# MQTT Callback for incoming messages
-def on_message(client, userdata, msg):
-    try:
-        spin_msg = json.loads(msg.payload.decode())
-        bridge.publish_spin(spin_msg)
-        print(f"Received Twist message from MQTT and published to ROS2: {spin_msg}")
-    except json.JSONDecodeError:
-        print("Failed to decode MQTT message as JSON")
+    def on_message(self, _1, _2, msg):
+        self.get_logger().info(f"Handling spin config message from MQTT: {msg.payload}")
+        try:
+            spin_msg = json.loads(msg.payload.decode())
+            self.publish_spin_config(spin_msg)
+            print(f"Received Spin Config message from MQTT and published to ROS2: {spin_msg}")
+        except json.JSONDecodeError:
+            print("Failed to decode MQTT message as JSON")
 
 def retry_until_connected(mqtt_client, broker_address, port):
     # Retry connecting to MQTT broker
@@ -79,7 +89,7 @@ if __name__ == '__main__':
     mqtt_client = mqtt.Client()
 
     # Set MQTT callback
-    mqtt_client.on_message = on_message
+    mqtt_client.on_message = bridge.on_message
 
     # MQTT Broker information
     broker_address = "127.0.0.1"  # Example broker address
@@ -89,7 +99,7 @@ if __name__ == '__main__':
     # Make this match RaP
     mqtt_lidar_topic = "/Scan"
     mqtt_twist_topic = "mqtt/twist"
-    mqtt_spin_topic = "mqtt/spin_config"
+    mqtt_spin_topic = "/spin_config"
 
     # Connect to MQTT broker
     retry_until_connected(mqtt_client, broker_address, port)
