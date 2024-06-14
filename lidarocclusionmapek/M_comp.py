@@ -24,7 +24,7 @@ from RoboSapiensAdaptivePlatform.Communication.Messages.messages import LidarRan
 def lidar_mask_from_scan(scan: LidarRange) -> BoolLidarMask:
     scan_ranges = np.array(scan.rangeList)
     return BoolLidarMask(
-        (scan_ranges < scan.rangeMax) & (scan_ranges > scan.rangeMin),
+        (scan_ranges != np.inf) & (scan_ranges != -np.inf),
         base_angle=Fraction(2, len(scan.rangeList)),
         # base_angle=scan.angleIncrement/180,
     )
