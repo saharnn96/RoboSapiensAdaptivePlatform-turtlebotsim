@@ -28,7 +28,7 @@ class Analysis(TriggeredNode):
         # prob_lidar_mask, prob_lidar_mask_history = self.knowledge.read("ProbLidarMask", queueSize=2)
 
         # 2. PERFORM ANALYSIS
-        self.logger.log("["+self._name+"] - "+"Analyzing knowledge")
+        self.logger.log(f"[{self._name}] - Analyzing knowledge: {args}")
 
         # 3. SIGNAL ANALYSIS STATE VIA KNOWLEDGE
         self.RaPSignalStatus(component=adaptivityComponents.ANALYSIS,status=analysisStatus.ANOMALY,accuracy=1.0)    #DUMMY

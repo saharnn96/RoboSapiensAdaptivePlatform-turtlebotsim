@@ -14,7 +14,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from RoboSapiensAdaptivePlatform.utils.nodes import TriggeredNode
-from RoboSapiensAdaptivePlatform.Communication.Messages.messages import ComponentStatus
+from RoboSapiensAdaptivePlatform.Communication.Messages.messages import Action
 from RoboSapiensAdaptivePlatform.utils.constants import *
 from lidarocclusion.masks import BoolLidarMask, ProbLidarMask
 from lidarocclusion.sliding_lidar_masks import sliding_lidar_mask, sliding_prob_lidar_mask
@@ -128,7 +128,15 @@ class Monitor(TriggeredNode):
         # 3. SIGNAL MONITORING STATE VIA KNOWLEDGE
         self.RaPSignalStatus(component=adaptivityComponents.MONITOR,status=status, accuracy=accuracy)
 
-        self.logger.log("["+self._name+"] - "+"Monitoring robot odometry and detected persons")
+        self.logger.log("["+self._name+"] - "+"Monitoring")
+
+        # Hack to get the lidar mask into the knowledge base
+        plan = Action()
+        plan.name = 'SpeedAdaptationAction'
+        plan.ID = actionType.ADAPTATIONTYPE
+        plan.description = "SPEED ADAPTATION"
+        plan.propertyList = [lidar_mask_reduced]
+        self.knowledge.write(plan)
 
         # !!FOR TESTING!!
         #print(json.dumps(ROB_ODO, default=lambda o: o.__dict__,sort_keys=True, indent=4))
