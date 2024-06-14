@@ -14,7 +14,7 @@ E = TypeVar('E')
 from abc import ABCMeta
 import math
 import operator
-from functools import partial
+from functools import partial, reduce
 from collections.abc import Sequence
 from collections import deque
 import itertools
@@ -302,6 +302,36 @@ class LidarMask(Generic[D]):
         for x, y in zip(self._values, other._values):
             assert x == pytest.approx(y)
 
+    def rotate(self, param: Fraction | int) -> 'LidarMask[D]':
+        '''Rotate the values of the lidar mask through a given angle or number of base angles'''
+        match param:
+            case Fraction():
+                return self.rotate(round(param / self.base_angle))
+            case int():
+                return self.__class__(
+                    np.roll(self._values, param),
+                    self.base_angle,
+                )
+            case _:
+                raise ValueError(f'Invalid rotation parameter {param}')
+            
+    def reduce_rotate(self,
+                      f: 'Callable[[LidarMask[D], LidarMask[D]], LidarMask[D]]',
+                      param: Fraction | int) -> 'LidarMask[D]':
+        match param:
+            case Fraction():
+                n = round(param / self.base_angle)
+            case int():
+                n = param
+            case _:
+                raise ValueError(f'Invalid rotation parameter {param}')
+            
+        rotations = ([self.rotate(i) for i in range(1,n+1)]
+                     if n > 0
+                     else [self.rotate(-i) for i in range(1,-n+1)])
+            
+        return reduce(f, rotations, self)
+    
 
 class BoolLidarMask(LidarMask[bool]):
     '''Boolean LIDAR data mask'''
@@ -352,7 +382,53 @@ class BoolLidarMask(LidarMask[bool]):
                    [r"$" + str(i) + r"\pi$/4" for i in range(9)])
         plt.yticks([0, 1], [0, 1])
         return fig
+
+    def __and__(self, other: Union[D, 'LidarMask[D]']) -> 'LidarMask[D]':
+        match other:
+            case LidarMask():
+                assert self.base_angle == other.base_angle
+                return self.__class__(
+                    self._values & other._values,
+                    self.base_angle,
+                ) # type: ignore
+            case _:
+                return self.__class__(
+                    self._values & other,
+                    self.base_angle,
+                ) # type: ignore
+
+    def __rand__(self, other: Union[D, 'LidarMask[D]']):
+        return self.__class__(
+            other & self._values,
+            self.base_angle,
+        )
+
+    def __or__(self, other: Union[D, 'LidarMask[D]']) -> 'LidarMask[D]':
+        match other:
+            case LidarMask():
+                assert self.base_angle == other.base_angle
+                return self.__class__(
+                    self._values | other._values,
+                    self.base_angle,
+                ) # type: ignore
+            case _:
+                return self.__class__(
+                    self._values | other,
+                    self.base_angle,
+                ) # type: ignore
+
+    def __ror__(self, other: Union[D, 'LidarMask[D]']):
+        return self.__class__(
+            other | self._values,
+            self.base_angle,
+        )
+
+    def strengthen(self, param: Fraction | int):
+        return self.reduce_rotate(operator.and_, param)
     
+    def weaken(self, param: Fraction | int):
+        return self.reduce_rotate(operator.or_, param)
+
 
 class ProbLidarMask(LidarMask[float]):
     '''Probablistic LIDAR mask'''
