@@ -135,7 +135,7 @@ class Monitor(TriggeredNode):
         plan.name = 'SpeedAdaptationAction'
         plan.ID = actionType.ADAPTATIONTYPE
         plan.description = "SPEED ADAPTATION"
-        plan.propertyList = [lidar_mask_reduced]
+        plan.propertyList = [{"mask": lidar_mask_reduced, "directions": None}]
         self.knowledge.write(plan)
 
         # !!FOR TESTING!!

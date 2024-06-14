@@ -31,9 +31,6 @@ class plan(TriggeredNode):
         # 1. DETERMINE PLAN
         _status = planStatus.PLANNING
         
-        # TODO: Do something with the plan
-        hack_plan = self.knowledge._action
-
         # 2. WRITE PLAN TO KNOWLEDGE
         self.knowledge.write(self._plan)
 

@@ -10,7 +10,8 @@ from RoboSapiensAdaptivePlatform.utils.nodes import TriggeredNode
 from RoboSapiensAdaptivePlatform.Communication.Messages.messages import ComponentStatus
 from RoboSapiensAdaptivePlatform.utils.constants import *
 
-
+from RoboSapiensAdaptivePlatform.utils.CommunicationInterfaces import MQTTInterface
+import json
 
 class Execute(TriggeredNode):
 
@@ -29,17 +30,24 @@ class Execute(TriggeredNode):
         _status = executeStatus.IDLE
         _accuracy = 1.0
 
-        # 1. CHECK FOR ACTIVE DIAGNOSIS/ADAPTATION PLAN FROM KB
-        _diagnosePlan, historyD = self.knowledge.read(actionType.DIAGNOSISTYPE, 1)
-        _adaptationPlan, historyA = self.knowledge.read(actionType.ADAPTATIONTYPE, 1)
-        # 2. EXECUTE PLAN
-        if _diagnosePlan != -1:
-            self.logger.log("[" + self._name + "] - " + "Diagnose action registered to adaptation management")
-            self._adaptationManagement.performDiagnosis(_diagnosePlan)
-        elif _adaptationPlan != -1:
-            self.logger.log("[" + self._name + "] - " + "Adaptation action registered to adaptation management")
-            self._adaptationManagement.performAdaptation(_adaptationPlan)
+        # # 1. CHECK FOR ACTIVE DIAGNOSIS/ADAPTATION PLAN FROM KB
+        # _diagnosePlan, historyD = self.knowledge.read(actionType.DIAGNOSISTYPE, 1)
+        # _adaptationPlan, historyA = self.knowledge.read(actionType.ADAPTATIONTYPE, 1)
+        # # 2. EXECUTE PLAN
+        # if _diagnosePlan != -1:
+        #     self.logger.log("[" + self._name + "] - " + "Diagnose action registered to adaptation management")
+        #     self._adaptationManagement.performDiagnosis(_diagnosePlan)
+        # elif _adaptationPlan != -1:
+        #     self.logger.log("[" + self._name + "] - " + "Adaptation action registered to adaptation management")
+        #     self._adaptationManagement.performAdaptation(_adaptationPlan)
 
+        hack_plan = self.knowledge._action
+        directions = hack_plan._propertyList[-1]['directions']
+
+        client = MQTTInterface('hackmqtt')
+        client.start()
+        client.push('/scan_config',
+                    json.dumps({'commands': directions, 'period': 8}))
 
         _status = executeStatus.EXECUTION
 
