@@ -22,7 +22,7 @@ L = Legitimate(logger=RaP.logger,knowledgeBase=KB,verbose=verbose)
 E = Execute(logger=RaP.logger,knowledgeBase=KB,adaptationManagement=RaP.adaptationManagement,verbose=verbose)
 
 # --- adaptation orchestrator @ 5s ---
-adaptation_orchestrator = AdaptationOrchestrator(logger=RaP.logger,knowledgeBase=KB,dt=5,M=M,A=A,P=P,L=L,E=E,verbose=verbose)
+adaptation_orchestrator = AdaptationOrchestrator(logger=RaP.logger,knowledgeBase=KB,dt=0.1,M=M,A=A,P=P,L=L,E=E,verbose=verbose)
 RaP.adaptationOrchestrator = adaptation_orchestrator
 
 RaP.knowledgeBase = KB

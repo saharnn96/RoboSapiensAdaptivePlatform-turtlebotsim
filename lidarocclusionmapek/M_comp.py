@@ -45,13 +45,13 @@ class Monitor(TriggeredNode):
     # -------------------------------------INTERNAL FUNCTIONS----------------------------------------
     # ------------------------------------------------------------------------------------------------
     def _SpinOnceFcn(self, args):
-
-        # 1. FETCH robot odometry and detected persons from KB
-        ROB_ODO,ROB_ODO_history = self.knowledge.read("RobotOdometry",queueSize=2)
-        # PERSON_DETECT, PERSON_DETECT_history = self.knowledge.read("DetectedPersons", queueSize=2)
         lidar_data,lidar_data_history = self.knowledge.read("LidarRange",queueSize=2)
-        # self.logger.log(f"[{self._name}] - Knowledge = {self.knowledge._PropertyList}")
-        # self.logger.log("["+self._name+"] - "+"Robot Scan name: " + repr(self.knowledge._robotScanList[0].name))  
+
+        self.logger.log(f"[{self._name}] - Knowledge = {self.knowledge._PropertyList}")
+
+        if not isinstance(lidar_data, LidarRange):
+            self.logger.log("["+self._name+"] - "+"No lidar data available")
+            return
         self.logger.log("["+self._name+"] - "+"Acquired lidar data: " + repr(lidar_data)) 
         self.logger.log("["+self._name+"] - "+"Lidar Data angleMin: " + repr(lidar_data.angleMin))
         self.logger.log("["+self._name+"] - "+"Lidar Data angleMax: " + repr(lidar_data.angleMax))
@@ -73,14 +73,16 @@ class Monitor(TriggeredNode):
         prob_lidar_mask = next(self._sliding_prob_lidar_masks)
         self.logger.log(f"[{self._name}] - Prob lidar mask: {prob_lidar_mask}")
 
+        # Plot the prob lidar mask to a file
         prob_lidar_mask.plot()
         plt.savefig("prob_lidar_mask.png")
 
         _status = monitorStatus.NORMAL
-        _accuracy = 1.0
-        # self.knowledge.write("ProbLidarMask", prob_lidar_mask)
+        # _accuracy = 1.0
+        self.knowledge.write("ProbLidarMask", prob_lidar_mask)
 
         # Plot the prob lidar mask
+        
 
         # plt.imshow(prob_lidar_mask)
 

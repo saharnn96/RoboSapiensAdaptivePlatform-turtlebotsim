@@ -23,15 +23,17 @@ class Analysis(TriggeredNode):
     # ------------------------------------------------------------------------------------------------
     def _SpinOnceFcn(self, args):
         # 1. FETCH KNOWLEDGE FROM KNOWLEDGE BASE VIA KNOWLEGE MANAGEMENT
-        ROB_ODO, ROB_ODO_history = self.knowledge.read("RobotOdometry", queueSize=2)
-        PERSON_DETECT, PERSON_DETECT_history = self.knowledge.read("DetectedPersons", queueSize=2)
+        # ROB_ODO, ROB_ODO_history = self.knowledge.read("RobotOdometry", queueSize=2)
+        # PERSON_DETECT, PERSON_DETECT_history = self.knowledge.read("DetectedPersons", queueSize=2)
+        prob_lidar_mask, prob_lidar_mask_history = self.knowledge.read("ProbLidarMask", queueSize=2)
 
         # 2. PERFORM ANALYSIS
+        
 
         # 3. SIGNAL ANALYSIS STATE VIA KNOWLEDGE
         self.RaPSignalStatus(component=adaptivityComponents.ANALYSIS,status=analysisStatus.ANOMALY,accuracy=1.0)    #DUMMY
 
-        self.logger.log("["+self._name+"] - "+"Analyzing knowledge: " + PERSON_DETECT.name)
+        # self.logger.log("["+self._name+"] - "+"Analyzing knowledge: " + PERSON_DETECT.name)
 
         # 4. return status of execution (fail = False, success = True)
         return True
