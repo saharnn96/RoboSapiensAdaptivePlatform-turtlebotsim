@@ -15,7 +15,7 @@ ARG GID=${UID}
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git libcanberra-gtk-module libcanberra-gtk3-module fuse3 libfuse2 libqt5svg5-dev \
     python3-pip python3-opencv python3-tk python3-pyqt5.qtwebengine mesa-utils\
-    gdb gdbserver vim jupyter-notebook python3-jupyter-server sudo ssh
+    gdb gdbserver vim jupyter-notebook python3-jupyter-server sudo ssh zsh
 
 RUN mkdir -p /ws/src
 WORKDIR /ws
