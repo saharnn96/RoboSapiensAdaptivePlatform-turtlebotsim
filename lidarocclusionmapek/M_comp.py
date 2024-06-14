@@ -20,6 +20,12 @@ from lidarocclusion.masks import BoolLidarMask, ProbLidarMask
 from lidarocclusion.sliding_lidar_masks import sliding_lidar_mask, sliding_prob_lidar_mask
 from RoboSapiensAdaptivePlatform.Communication.Messages.messages import LidarRange
 
+# Probability threshold for detecting a lidar occlusion
+OCCLUSION_THRESHOLD = 0.3
+# Number of scans to use for the sliding window
+SLIDING_WINDOW_SIZE = 3
+# Lidar mask sensitivity (ignore small occlusions below this angle)
+OCCLUSION_SENSITIVITY = Fraction(1, 48)
 
 def lidar_mask_from_scan(scan: LidarRange) -> BoolLidarMask:
     scan_ranges = np.array(scan.rangeList)
@@ -58,53 +64,69 @@ class Monitor(TriggeredNode):
         self.logger.log("["+self._name+"] - "+"Lidar Data Len: " + repr(len(lidar_data.rangeList)))
         self.logger.log("["+self._name+"] - "+"Lidar Data Raw: " + repr(lidar_data.rangeList))
         self.logger.log("["+self._name+"] - "+"Lidar Scan Angle Increment: " + repr(lidar_data.angleIncrement))
-        self.logger.log("["+self._name+"] - "+"TEST!")
 
         # 2. PERFORM MONITORING
         #!!--------------USER IMPLEMENTATION---------------!!
         self._scans.append(lidar_data)
 
-        # Add the next sliding boolean lidar mask to the knowledge base
-        lidar_mask = next(self._sliding_lidar_masks)
-        self.logger.log(f"[{self._name}] - Lidar mask: {lidar_mask}")
         # self.knowledge.write("LidarMask", next(self._sliding_lidar_masks)) 
 
         # Add the next sliding probabilistic lidar mask to the knowledge base
         prob_lidar_mask = next(self._sliding_prob_lidar_masks)
         self.logger.log(f"[{self._name}] - Prob lidar mask: {prob_lidar_mask}")
+        
+        # Rotate the probabilistic lidar mask to align with the robot's orientation
+        prob_lidar_mask = prob_lidar_mask.rotate(-Fraction(1, 2))
 
         # Plot the prob lidar mask to a file
         prob_lidar_mask.plot()
         plt.savefig("prob_lidar_mask.png")
+        # self.knowledge.write("ProbLidarMask", prob_lidar_mask)
 
-        _status = monitorStatus.NORMAL
-        # _accuracy = 1.0
-        self.knowledge.write("ProbLidarMask", prob_lidar_mask)
-
-        # Plot the prob lidar mask
+        # Compute the boolean lidar mask
+        # Apply the occlusion threshold
+        lidar_mask = (prob_lidar_mask >= OCCLUSION_THRESHOLD)
+        # Weaken lidar masks to threshold
+        lidar_mask = lidar_mask.weaken(OCCLUSION_SENSITIVITY)
+        lidar_mask = lidar_mask.weaken(-OCCLUSION_SENSITIVITY)
+        lidar_mask = lidar_mask.strengthen(OCCLUSION_SENSITIVITY)
+        lidar_mask = lidar_mask.strengthen(-OCCLUSION_SENSITIVITY)
+        self.logger.log(f"[{self._name}] - Lidar mask: {lidar_mask}")
         
+        lidar_mask.plot()
+        plt.savefig("bool_lidar_mask.png")
 
-        # plt.imshow(prob_lidar_mask)
+        # We don't care if there is an occlusion directly behind the robot
+        ignore_lidar_region = BoolLidarMask(
+            [(3*np.pi/4, 5*np.pi/4)],
+            lidar_mask.base_angle,
+        )
+        ignore_lidar_region.plot()
+        plt.savefig("ignore_lidar_region.png")
 
-        # In this case monitoring consists of building a sliding lidar occlusion map
+        # Mask out the ignored region
+        lidar_mask_reduced = lidar_mask | ignore_lidar_region
+        self.logger.log(f"[{self._name}] - Reduced lidar mask: {lidar_mask_reduced}")
+        lidar_mask_reduced.plot()
+        plt.savefig("bool_lidar_mask_reduced.png")
 
-        # self._counter = self._counter+1
-        # if self._counter == 4:
-        #     _status = monitorStatus.ANOMALY
-        #     _accuracy = 1.0
-        # else:
-        #     _status = monitorStatus.NORMAL
-        #     _accuracy = 1.0
+        # Add the next sliding boolean lidar mask to the knowledge base
+        self.logger.log(f"[{self._name}] - Lidar mask: {lidar_mask}")
+        # raise Exception("I object!")
 
-        # plt.figure()
-        # prob_lidar_mask.plot()
-        # plt.savefig("prob_lidar_mask.png")
+        # Set the monitor status to mark an anomaly if the there is any
+        # occlusion outside of the ignored region
+        status = (monitorStatus.NORMAL
+                  if lidar_mask_reduced._values.all()
+                  else monitorStatus.ANOMALY)
+        self.logger.log(f"[Monitor] status was {status}")
+        # TODO: figure out what this should be
+        accuracy = 1.0
 
         #!!--------------USER IMPLEMENTATION--------------!!
 
         # 3. SIGNAL MONITORING STATE VIA KNOWLEDGE
-        self.RaPSignalStatus(component=adaptivityComponents.MONITOR,status=_status,accuracy=_accuracy)
-
+        self.RaPSignalStatus(component=adaptivityComponents.MONITOR,status=status, accuracy=accuracy)
 
         self.logger.log("["+self._name+"] - "+"Monitoring robot odometry and detected persons")
 
@@ -128,16 +150,9 @@ class Monitor(TriggeredNode):
             for scan in scans():
                 yield lidar_mask_from_scan(scan)
         
-        raw_masks1, raw_masks2 = itertools.tee(raw_lidar_masks(), 2)
-
-        self._sliding_lidar_masks = sliding_lidar_mask(
-            raw_masks1,
-            window_size=5,
-            cutoff=0.8,
-        )
         self._sliding_prob_lidar_masks = sliding_prob_lidar_mask(
-            raw_masks2,
-            window_size=5,
+            raw_lidar_masks(),
+            window_size=SLIDING_WINDOW_SIZE,
         )
 
 

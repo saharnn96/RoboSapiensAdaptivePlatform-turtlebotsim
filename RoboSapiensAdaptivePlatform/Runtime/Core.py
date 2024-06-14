@@ -660,7 +660,7 @@ class remoteCore(Node):
     # ------------------------------------------------------------------------------------------------
     def _dispatch(self,args):
         """Function to dispatch the remote commands."""
-        if self._verbose:print("DISPATCHING RECEIVED MESSAGE")
+        # if self._verbose:print("DISPATCHING RECEIVED MESSAGE")
         topic=args[0]
         messageRAW = args[1]
 

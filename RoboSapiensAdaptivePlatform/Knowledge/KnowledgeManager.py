@@ -54,7 +54,7 @@ class KnowledgeManager(Node):
 
         #TODO: ADD TRUSTWORTHINESS/SANITY CHECKING BEFORE WRITING
 
-        self.logger.log("[" + self._name + "] - " + "Knowledge registered: " + cls.name )
+        # self.logger.log("[" + self._name + "] - " + "Knowledge registered: " + cls.name )
         self._knowledgeBase.write(cls)
 
     def read(self,name='TBD',queueSize=10):

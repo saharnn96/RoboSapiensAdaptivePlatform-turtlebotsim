@@ -383,7 +383,7 @@ class BoolLidarMask(LidarMask[bool]):
         plt.yticks([0, 1], [0, 1])
         return fig
 
-    def __and__(self, other: Union[D, 'LidarMask[D]']) -> 'LidarMask[D]':
+    def __and__(self, other: Union[bool, 'BoolLidarMask']) -> 'BoolLidarMask':
         match other:
             case LidarMask():
                 assert self.base_angle == other.base_angle
@@ -397,13 +397,13 @@ class BoolLidarMask(LidarMask[bool]):
                     self.base_angle,
                 ) # type: ignore
 
-    def __rand__(self, other: Union[D, 'LidarMask[D]']):
+    def __rand__(self, other: Union[bool, 'BoolLidarMask']) -> 'BoolLidarMask':
         return self.__class__(
             other & self._values,
             self.base_angle,
         )
 
-    def __or__(self, other: Union[D, 'LidarMask[D]']) -> 'LidarMask[D]':
+    def __or__(self, other: Union[bool, 'BoolLidarMask']) -> 'BoolLidarMask':
         match other:
             case LidarMask():
                 assert self.base_angle == other.base_angle
@@ -417,11 +417,14 @@ class BoolLidarMask(LidarMask[bool]):
                     self.base_angle,
                 ) # type: ignore
 
-    def __ror__(self, other: Union[D, 'LidarMask[D]']):
+    def __ror__(self, other: Union[bool, 'BoolLidarMask']) -> 'BoolLidarMask':
         return self.__class__(
             other | self._values,
             self.base_angle,
         )
+
+    def __invert__(self) -> 'BoolLidarMask':
+        return self.map(operator.invert) # type: ignore
 
     def strengthen(self, param: Fraction | int):
         return self.reduce_rotate(operator.and_, param)
