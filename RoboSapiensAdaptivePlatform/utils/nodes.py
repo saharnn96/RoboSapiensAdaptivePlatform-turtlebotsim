@@ -9,6 +9,7 @@
 import os
 import logging
 import yaml
+import time
 
 from RoboSapiensAdaptivePlatform.utils.constants import *
 from RoboSapiensAdaptivePlatform.Communication.Messages.messages import ComponentStatus
@@ -487,7 +488,8 @@ class OrchestratorNode(TriggeredNode):
         if self._orchestrationStatus == orchestrationStatus.WAITING_FOR_ACTION_COMPLETE:
             # TODO: ADAPTATION MANAGEMENT NEEDS TO RELEASE FROM THIS STATE??
             # PROPOSAL: RETURN TO MONITORING WHEN ANOMALY IS GONE
-            status_M, history_M = self.knowledge.read(name=adaptivityComponents.MONITOR, queueSize=1)
-            if status_M.status == monitorStatus.NORMAL:
-                self._orchestrationStatus = orchestrationStatus.MONITORING
+            # status_M, history_M = self.knowledge.read(name=adaptivityComponents.MONITOR, queueSize=1)
+            # if status_M.status == monitorStatus.NORMAL:
+            time.sleep(3)
+            self._orchestrationStatus = orchestrationStatus.MONITORING
 

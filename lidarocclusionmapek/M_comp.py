@@ -92,7 +92,9 @@ class Monitor(TriggeredNode):
         lidar_mask = lidar_mask.strengthen(OCCLUSION_SENSITIVITY)
         lidar_mask = lidar_mask.strengthen(-OCCLUSION_SENSITIVITY)
         self.logger.log(f"[{self._name}] - Lidar mask: {lidar_mask}")
-        
+        # Fake lidar mask for testing
+        # lidar_mask = ~BoolLidarMask([(np.pi/4, 3*np.pi/4)],
+        #     lidar_mask.base_angle)
         lidar_mask.plot()
         plt.savefig("bool_lidar_mask.png")
 

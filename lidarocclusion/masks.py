@@ -373,7 +373,7 @@ class BoolLidarMask(LidarMask[bool]):
         from matplotlib import pyplot as plt
 
         x = self.real_angles
-        y = self.prob_mask._values
+        y = (~self).prob_mask._values
 
         fig = plt.figure(figsize=(6, 1))
         plt.fill_between(x, y, color='black', **kwargs)
@@ -424,7 +424,7 @@ class BoolLidarMask(LidarMask[bool]):
         )
 
     def __invert__(self) -> 'BoolLidarMask':
-        return self.map(operator.invert) # type: ignore
+        return self.map(operator.not_) # type: ignore
 
     def strengthen(self, param: Fraction | int):
         return self.reduce_rotate(operator.and_, param)

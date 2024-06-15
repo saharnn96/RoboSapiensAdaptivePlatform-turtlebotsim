@@ -13,10 +13,11 @@ from RoboSapiensAdaptivePlatform.utils.constants import *
 
 import numpy as np
 from lidarocclusion.masks import BoolLidarMask
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from fractions import Fraction
+import traceback
 
-def calculator_lidar_occlusion_angles(lidar_mask: BoolLidarMask) -> List[Fraction]:
+def calculate_lidar_occlusion_rotation_angles(lidar_mask: BoolLidarMask) -> List[Fraction]:
     """
     Calculate the angles of the detected occlusions in the lidar mask.
     :param lidar_mask: The lidar mask.
@@ -25,23 +26,39 @@ def calculator_lidar_occlusion_angles(lidar_mask: BoolLidarMask) -> List[Fractio
     occlusion_angles = []
     mask_angles =  np.concatenate((
         np.arange(0, 1, lidar_mask.base_angle),
-        np.arange(0, -1, -lidar_mask.base_angle),
+        np.arange(-1, 0, lidar_mask.base_angle),
     ))
-    mask_values = lidar_mask.map_poly(lambda x: 1 if x else 0)._values
+    mask_values = lidar_mask.map_poly(lambda x: 0 if x else 1)._values
     rotation_angles = (mask_angles * mask_values)
+
     occlusion_angles = [rotation_angles.min(), rotation_angles.max()]
     
-    return (occlusion_angles
-            if occlusion_angles[1] - occlusion_angles[0] > 1
-            else [Fraction(2)]) 
+    # Return the two rotations necessary for occlusions on either side
+    # of the robot
+    match occlusion_angles:
+        case [x]:
+            return [x, -x]
+        case [x, y] if 0 <= x <= y:
+            return [y, -y]
+        case [x, y] if x <= y <= 0:
+            return [x, -x]
+        case [x, y] if y - x > 1:
+            return [Fraction(2)]
+        case [x, y] if abs(x) > abs(y):
+            return [x, -x + y, -y]
+        case [x, y] if abs(y) > abs(x):
+            return [y, -y + x, -x]
+        case _:
+            assert False
 
-def occlusion_angle_to_rotation(occlusion_angle: Fraction) -> Tuple[float, float]:
-    return (
-        1,
-        float(occlusion_angle),
-    )
+def occlusion_angle_to_rotation(occlusion_angle: Fraction) -> Dict[str, float]:
+    signed_angle = float(occlusion_angle)*np.pi
+    return {
+        'omega': (-1.0)**int(signed_angle < 0),
+        'duration': abs(float(signed_angle)),
+    }
 
-def occlusion_angles_to_rotations(occlusion_angles: List[Fraction]) -> List[Tuple[float, float]]:
+def occlusion_angles_to_rotations(occlusion_angles: List[Fraction]) -> List[Dict[str, float]]:
     return list(map(occlusion_angle_to_rotation, occlusion_angles))
 
 
@@ -72,26 +89,34 @@ class Plan(TriggeredNode):
         self.logger.log(
             f"[{self._name}] - Plan determined: {hack_plan.__dict__}")
 
-        lidar_mask = hack_plan._propertyList[-1]['mask']
+        try:
+            lidar_mask = hack_plan._propertyList[-1]['mask']
+
+            self.logger.log(
+                f"[{self._name}] - Plan lidar mask determined: {lidar_mask}")
+
+            occlusion_angles = calculate_lidar_occlusion_rotation_angles(lidar_mask)
+            directions = occlusion_angles_to_rotations(occlusion_angles)
+        except:
+            self.logger.log("traceback case")
+            occlusion_angles = []
+            directions = []
+            self.logger.log("traceback: " + traceback.format_exc())
 
         self.logger.log(
-            f"[{self._name}] - Plan lidar mask determined: {lidar_mask}")
-
-        occlusion_angles = calculator_lidar_occlusion_angles(lidar_mask)
-        plan = [
-            {'omega': -1, 'duration': 1.57},
-            {'omega': 1, 'duration': 1.57},
-        ]
+            f"[{self._name}] - Plan rotations determined: {occlusion_angles}")
+        # directions = [
+        #     {'omega': -1, 'duration': 1.57},
+        #     {'omega': 1, 'duration': 1.57},
+        # ]
         # Hack to get the lidar mask into the knowledge base
         plan = Action()
         plan.name = 'SpeedAdaptationAction'
         plan.ID = actionType.ADAPTATIONTYPE
         plan.description = "SPEED ADAPTATION"
-        plan.propertyList = [{"mask": lidar_mask, "directions": plan}]
+        plan.propertyList = [{"mask": lidar_mask, "directions": directions}]
         self.knowledge.write(plan)
-
-        self.logger.log(
-            f"[{self._name}] - Plan rotations determined: {occlusion_angles}")
+        self.logger.log(f"[{self._name}] - Plan action written to knowledge")
 
         # x. SIGNAL PLAN STATE VIA KNOWLEDGE
         _status = planStatus.PLANNED

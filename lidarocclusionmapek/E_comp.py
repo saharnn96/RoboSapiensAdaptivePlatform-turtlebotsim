@@ -30,6 +30,8 @@ class Execute(TriggeredNode):
         _status = executeStatus.IDLE
         _accuracy = 1.0
 
+        self.logger.log("[" + self._name + "] - " + "entered execute")
+
         # # 1. CHECK FOR ACTIVE DIAGNOSIS/ADAPTATION PLAN FROM KB
         # _diagnosePlan, historyD = self.knowledge.read(actionType.DIAGNOSISTYPE, 1)
         # _adaptationPlan, historyA = self.knowledge.read(actionType.ADAPTATIONTYPE, 1)
@@ -44,10 +46,13 @@ class Execute(TriggeredNode):
         hack_plan = self.knowledge._action
         directions = hack_plan._propertyList[-1]['directions']
 
+        self.logger.log("[" + self._name + "] - " + "Executing plan: " + str(directions))
         client = MQTTInterface('hackmqtt')
         client.start()
-        client.push('/scan_config',
+        client.push('/spin_config',
                     json.dumps({'commands': directions, 'period': 8}))
+        self.logger.log("[" + self._name + "] - " + "Plan executed")
+        del client
 
         _status = executeStatus.EXECUTION
 

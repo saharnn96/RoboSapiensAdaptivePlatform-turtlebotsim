@@ -10,7 +10,7 @@ import time
 def json_to_spin_command(json_data : dict) -> SpinCommand:
     spin_command = SpinCommand()
     spin_command.omega = float(json_data['omega'])
-    spin_command.duration = json_data['duration']
+    spin_command.duration = float(json_data['duration'])
     return spin_command
 
 def json_to_spin_commands(json_data : dict) -> SpinPeriodicCommands:
@@ -89,6 +89,7 @@ if __name__ == '__main__':
     mqtt_client = mqtt.Client()
 
     # Set MQTT callback
+    print("Set message handler for bridge")
     mqtt_client.on_message = bridge.on_message
 
     # MQTT Broker information
@@ -98,14 +99,15 @@ if __name__ == '__main__':
     # MQTT Topics
     # Make this match RaP
     mqtt_lidar_topic = "/Scan"
-    mqtt_twist_topic = "mqtt/twist"
-    mqtt_spin_topic = "/spin_config"
+    # mqtt_spin_topic = "spin_config"
 
     # Connect to MQTT broker
     retry_until_connected(mqtt_client, broker_address, port)
 
     # Subscribe to the MQTT topic for Spin messages
-    mqtt_client.subscribe(mqtt_spin_topic)
+    mqtt_client.subscribe('/spin_config')
+    mqtt_client.subscribe('spin_config')
+
 
     # Subscribe to the MQTT topic for Twist messages
     # mqtt_client.subscribe(mqtt_twist_topic)
