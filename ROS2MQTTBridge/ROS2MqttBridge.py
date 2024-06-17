@@ -6,6 +6,7 @@ from geometry_msgs.msg import Twist
 from spin_interfaces.msg import SpinCommand, SpinPeriodicCommands
 import json
 import time
+from rclpy.qos import qos_profile_sensor_data
 
 def json_to_spin_command(json_data : dict) -> SpinCommand:
     spin_command = SpinCommand()
@@ -27,9 +28,9 @@ class ROS2MQTTBridge(Node):
         # ROS2 Subscriber to /scan topic
         self.subscription = self.create_subscription(
             LaserScan,
-            '/scan',
+            '/scan_safe',
             self.lidar_callback,
-            5
+            qos_profile_sensor_data,
         )
 
         # ROS2 Publisher to /cmd_vel topic
