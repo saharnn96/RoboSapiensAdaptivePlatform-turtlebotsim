@@ -23,7 +23,6 @@ def calculate_lidar_occlusion_rotation_angles(lidar_mask: BoolLidarMask) -> List
     :param lidar_mask: The lidar mask.
     :return: A list of angles of the detected occlusions.
     """
-    occlusion_angles = []
     mask_angles =  np.concatenate((
         np.arange(0, 1, lidar_mask.base_angle),
         np.arange(-1, 0, lidar_mask.base_angle),
@@ -31,25 +30,23 @@ def calculate_lidar_occlusion_rotation_angles(lidar_mask: BoolLidarMask) -> List
     mask_values = lidar_mask.map_poly(lambda x: 0 if x else 1)._values
     rotation_angles = (mask_angles * mask_values)
 
-    occlusion_angles = [rotation_angles.min(), rotation_angles.max()]
-    
-    # Return the two rotations necessary for occlusions on either side
+    # Return the sequence of rotations necessary for occlusions on either side
     # of the robot
-    match occlusion_angles:
-        case [x]:
-            return [x, -x]
-        case [x, y] if 0 <= x <= y:
-            return [y, -y]
-        case [x, y] if x <= y <= 0:
-            return [x, -x]
-        case [x, y] if y - x > 1:
-            return [Fraction(2)]
-        case [x, y] if abs(x) > abs(y):
-            return [x, -x + y, -y]
-        case [x, y] if abs(y) > abs(x):
-            return [y, -y + x, -x]
-        case _:
-            assert False
+    (x, y) = (rotation_angles.min(), rotation_angles.max())
+    if x == y:
+        return [x, -x]
+    elif 0 <= x <= y:
+        return [y, -y]
+    elif x <= y <= 0:
+        return [x, -x]
+    elif y - x > 1:
+        return [Fraction(2)]
+    elif abs(x) > abs(y):
+        return [x, -x + y, -y]
+    elif abs(y) > abs(x):
+        return [y, -y + x, -x]
+    else:
+        assert False
 
 def occlusion_angle_to_rotation(occlusion_angle: Fraction) -> Dict[str, float]:
     signed_angle = float(occlusion_angle)*np.pi
@@ -79,7 +76,7 @@ class Plan(TriggeredNode):
 
         # 1. DETERMINE PLAN
         _status = planStatus.PLANNING
-        hack_plan = self.knowledge._action
+        # hack_plan = self.knowledge._action
 
 
         # 2. WRITE PLAN TO KNOWLEDGE
@@ -110,11 +107,11 @@ class Plan(TriggeredNode):
         #     {'omega': 1, 'duration': 1.57},
         # ]
         # Hack to get the lidar mask into the knowledge base
-        plan = Action()
-        plan.name = 'SpeedAdaptationAction'
-        plan.ID = actionType.ADAPTATIONTYPE
-        plan.description = "SPEED ADAPTATION"
-        plan.propertyList = [{"mask": lidar_mask, "directions": directions}]
+        # plan = Action()
+        # plan.name = 'SpeedAdaptationAction'
+        # plan.ID = actionType.ADAPTATIONTYPE
+        # plan.description = "SPEED ADAPTATION"
+        # plan.propertyList = [{"mask": lidar_mask, "directions": directions}]
         self.knowledge.write(plan)
         self.logger.log(f"[{self._name}] - Plan action written to knowledge")
 

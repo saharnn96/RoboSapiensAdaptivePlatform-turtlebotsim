@@ -51,19 +51,22 @@ class Monitor(TriggeredNode):
     # -------------------------------------INTERNAL FUNCTIONS----------------------------------------
     # ------------------------------------------------------------------------------------------------
     def _SpinOnceFcn(self, args):
-        lidar_data,lidar_data_history = self.knowledge.read("LidarRange",queueSize=2)
+        lidar_data, _ = self.knowledge.read('LidarRange', 1)
+        lidar_mask_old, _ = self.knowledge.read('LidarMask', 1)
 
         self.logger.log(f"[{self._name}] - Knowledge = {self.knowledge._PropertyList}")
 
+        # Early exit in the case there is not lidar data
         if not isinstance(lidar_data, LidarRange):
-            self.logger.log("["+self._name+"] - "+"No lidar data available")
+            self.logger.log(f"[{self._name}] - No lidar data available")
             return
-        self.logger.log("["+self._name+"] - "+"Acquired lidar data: " + repr(lidar_data)) 
-        self.logger.log("["+self._name+"] - "+"Lidar Data angleMin: " + repr(lidar_data.angleMin))
-        self.logger.log("["+self._name+"] - "+"Lidar Data angleMax: " + repr(lidar_data.angleMax))
-        self.logger.log("["+self._name+"] - "+"Lidar Data Len: " + repr(len(lidar_data.rangeList)))
-        self.logger.log("["+self._name+"] - "+"Lidar Data Raw: " + repr(lidar_data.rangeList))
-        self.logger.log("["+self._name+"] - "+"Lidar Scan Angle Increment: " + repr(lidar_data.angleIncrement))
+        
+        self.logger.log(f"[{self._name}] - Acquired lidar data: {repr(lidar_data)}") 
+        self.logger.log(f"[{self._name}] - Lidar Data angleMin: {repr(lidar_data.angleMin)}")
+        self.logger.log(f"[{self._name}] - Lidar Data angleMax: {repr(lidar_data.angleMax)}")
+        self.logger.log(f"[{self._name}] - Lidar Data Len: {repr(len(lidar_data.rangeList))}")
+        self.logger.log(f"[{self._name}] - Lidar Data Raw: {repr(lidar_data.rangeList)}")
+        self.logger.log(f"[{self._name}] - Lidar Scan Angle Increment: {repr(lidar_data.angleIncrement)}")
 
         # 2. PERFORM MONITORING
         #!!--------------USER IMPLEMENTATION---------------!!
@@ -77,6 +80,9 @@ class Monitor(TriggeredNode):
         
         # Rotate the probabilistic lidar mask to align with the robot's orientation
         prob_lidar_mask = prob_lidar_mask.rotate(-Fraction(1, 2))
+
+        self.logger.log(f"[{self._name}] - Written lidar mask to knowledge {prob_lidar_mask}")
+        self.knowledge.write(prob_lidar_mask)
 
         # Plot the prob lidar mask to a file
         prob_lidar_mask.plot()
@@ -92,9 +98,7 @@ class Monitor(TriggeredNode):
         lidar_mask = lidar_mask.strengthen(OCCLUSION_SENSITIVITY)
         lidar_mask = lidar_mask.strengthen(-OCCLUSION_SENSITIVITY)
         self.logger.log(f"[{self._name}] - Lidar mask: {lidar_mask}")
-        # Fake lidar mask for testing
-        # lidar_mask = ~BoolLidarMask([(np.pi/4, 3*np.pi/4)],
-        #     lidar_mask.base_angle)
+
         lidar_mask.plot()
         plt.savefig("bool_lidar_mask.png")
 
@@ -108,20 +112,21 @@ class Monitor(TriggeredNode):
 
         # Mask out the ignored region
         lidar_mask_reduced = lidar_mask | ignore_lidar_region
+
         self.logger.log(f"[{self._name}] - Reduced lidar mask: {lidar_mask_reduced}")
         lidar_mask_reduced.plot()
         plt.savefig("bool_lidar_mask_reduced.png")
 
         # Add the next sliding boolean lidar mask to the knowledge base
         self.logger.log(f"[{self._name}] - Lidar mask: {lidar_mask}")
-        # raise Exception("I object!")
 
         # Set the monitor status to mark an anomaly if the there is any
         # occlusion outside of the ignored region
         status = (monitorStatus.NORMAL
-                  if lidar_mask_reduced._values.all()
+                  if lidar_mask_reduced.approx_eq(lidar_mask_old)
                   else monitorStatus.ANOMALY)
         self.logger.log(f"[Monitor] status was {status}")
+
         # TODO: figure out what this should be
         accuracy = 1.0
 
@@ -130,15 +135,7 @@ class Monitor(TriggeredNode):
         # 3. SIGNAL MONITORING STATE VIA KNOWLEDGE
         self.RaPSignalStatus(component=adaptivityComponents.MONITOR,status=status, accuracy=accuracy)
 
-        self.logger.log("["+self._name+"] - "+"Monitoring")
-
-        # Hack to get the lidar mask into the knowledge base
-        plan = Action()
-        plan.name = 'SpeedAdaptationAction'
-        plan.ID = actionType.ADAPTATIONTYPE
-        plan.description = "SPEED ADAPTATION"
-        plan.propertyList = [{"mask": lidar_mask_reduced, "directions": None}]
-        self.knowledge.write(plan)
+        self.logger.log(f"[{self._name}] - Monitoring")
 
         # !!FOR TESTING!!
         #print(json.dumps(ROB_ODO, default=lambda o: o.__dict__,sort_keys=True, indent=4))

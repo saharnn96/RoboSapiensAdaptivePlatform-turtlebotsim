@@ -43,10 +43,12 @@ class Execute(TriggeredNode):
         #     self.logger.log("[" + self._name + "] - " + "Adaptation action registered to adaptation management")
         #     self._adaptationManagement.performAdaptation(_adaptationPlan)
 
-        hack_plan = self.knowledge._action
-        directions = hack_plan._propertyList[-1]['directions']
+        directions, _ = self.knowledge.read("directions", 1)
 
         self.logger.log("[" + self._name + "] - " + "Executing plan: " + str(directions))
+        # Directly create an MQTT client to send the plan to the robot
+        # This is a temporary hack until the action-based interface is properly
+        # implemented
         client = MQTTInterface('hackmqtt')
         client.start()
         client.push('/spin_config',

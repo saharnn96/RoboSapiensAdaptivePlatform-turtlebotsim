@@ -245,9 +245,11 @@ class KnowledgeBase(object):
         # List of robot odometry log
         self._robotOdometryList = []
 
-
         # List of Lidar Range
         self._robotScanList = []
+
+        # List of rotation directions
+        self._directions = []
 
     #------------------------------------------------------------------------------------------------
     # -------------------------------------INTERFACE FUNCTIONS---------------------------------------
@@ -266,7 +268,7 @@ class KnowledgeBase(object):
                 if not found:
                     kbp = KnowledgeBase_Property(name=data.name,
                         description=data.description, value=data.value, 
-                        min=data.min, max=data.max,retention=1000)
+                        min=data.min, max=data.max, retention=1000)
                     self._PropertyList.append(kbp)
             case ComponentStatus():
                 for s in self._statusList:
@@ -290,6 +292,9 @@ class KnowledgeBase(object):
                 self._prob_lidar_masks.append(data)
             case BoolLidarMask():
                 self._lidar_masks.append(data)
+            case list():
+                # A list of directions
+                self._directions.append(data)
             case _:
                 raise ValueError("Unknown knowledge type")
 
@@ -354,6 +359,11 @@ class KnowledgeBase(object):
             found = True
             data = self._prob_lidar_masks[-1] 
             historyQueue = self._prob_lidar_masks[-queueSize:]
+
+        if len(self._directions) != 0 and name == 'directions':
+            found = True
+            data = self._directions[-1] 
+            historyQueue = self._directions[-queueSize:]
 
         if not found:
             return -1,-1   #Property or ComponentStatus not found

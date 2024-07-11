@@ -135,15 +135,15 @@ class LidarRange(object):
                 angleIncrement = 0.0, timeIncrement = 0.0,
                 rangeMin = 0.0,rangeMax = 0.0, scanTime = 0.0, rangeList= None):
         
-        self._name = name
-        self._ID= ID
-        self._angleMin= angleMin
-        self._angleMax= angleMax
-        self._angleIncrement= angleIncrement
-        self._timeIncrement= timeIncrement
-        self._rangeMin= rangeMin
-        self._rangeMax= rangeMax
-        self._scanTime= scanTime
+        self._name: str = name
+        self._ID: int = ID
+        self._angleMin: float = angleMin
+        self._angleMax: float = angleMax
+        self._angleIncrement: float = angleIncrement
+        self._timeIncrement: float = timeIncrement
+        self._rangeMin: float = rangeMin
+        self._rangeMax: float = rangeMax
+        self._scanTime: float = scanTime
         self._overlayActive= False
         self._rangeList= rangeList
 
