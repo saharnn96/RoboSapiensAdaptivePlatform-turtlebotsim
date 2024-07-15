@@ -135,15 +135,15 @@ class LidarRange(object):
                 angleIncrement = 0.0, timeIncrement = 0.0,
                 rangeMin = 0.0,rangeMax = 0.0, scanTime = 0.0, rangeList= None):
         
-        self._name = name
-        self._ID= ID
-        self._angleMin= angleMin
-        self._angleMax= angleMax
-        self._angleIncrement= angleIncrement
-        self._timeIncrement= timeIncrement
-        self._rangeMin= rangeMin
-        self._rangeMax= rangeMax
-        self._scanTime= scanTime
+        self._name: str = name
+        self._ID: int = ID
+        self._angleMin: float = angleMin
+        self._angleMax: float = angleMax
+        self._angleIncrement: float = angleIncrement
+        self._timeIncrement: float = timeIncrement
+        self._rangeMin: float = rangeMin
+        self._rangeMax: float = rangeMax
+        self._scanTime: float = scanTime
         self._overlayActive= False
         self._rangeList= rangeList
 
@@ -259,20 +259,31 @@ class LidarRange(object):
         self._rangeList = cmp
 
     def instantiate(self,decodedJSON):
-        self._name = decodedJSON._name
-        self._ID = decodedJSON._ID
-        self._angleMin= decodedJSON._angleMin
-        self._angleMax= decodedJSON._angleMax
-        self._angleIncrement= decodedJSON._angleIncrement
-        self._timeIncrement= decodedJSON._timeIncrement
-        self._rangeMin= decodedJSON._rangeMin
-        self._rangeMax= decodedJSON._rangeMax
-        self._scanTime= decodedJSON._scanTime
-        # self._overlayActive= decodedJSON._overlayActive
-        self._rangeList= decodedJSON._rangeList
-
-
-
+        # two cases used to work around the fact that the simulator
+        # renames the actual ROS message names
+        # TODO: refactor the simulator so that the messages actually
+        # match ROS
+        self._name = getattr(decodedJSON, '_name', 'LidarRange')
+        self._ID = getattr(decodedJSON, '_ID', 'MEASURE')
+        try:
+            self._angleMin = decodedJSON._angleMin
+            self._angleMax= decodedJSON._angleMax
+            self._angleIncrement= decodedJSON._angleIncrement
+            self._timeIncrement= decodedJSON._timeIncrement
+            self._rangeMin= decodedJSON._rangeMin
+            self._rangeMax= decodedJSON._rangeMax
+            self._scanTime= decodedJSON._scanTime
+            # self._overlayActive= decodedJSON._overlayActive
+            self._rangeList= decodedJSON._rangeList
+        except AttributeError:
+            self._angleMin = decodedJSON.angle_min
+            self._angleMax = decodedJSON.angle_max
+            self._angleIncrement = decodedJSON.angle_increment
+            self._rangeMin = decodedJSON.range_min
+            self._rangeMax = decodedJSON.range_max
+            self._scanTime = decodedJSON.scan_time
+            self._timeIncrement = (decodedJSON.scan_time / len(decodedJSON.ranges))
+            self._rangeList = decodedJSON.ranges
         
 
 class Object(object):

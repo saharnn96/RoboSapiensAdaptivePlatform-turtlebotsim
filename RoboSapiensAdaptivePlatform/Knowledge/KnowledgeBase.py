@@ -11,6 +11,7 @@ from RoboSapiensAdaptivePlatform.Communication.Messages.messages import *
 import queue
 import uuid
 import hashlib
+from lidarocclusion.masks import (LidarMask, ProbLidarMask, BoolLidarMask)
 
 
 class KnowledgeBase_Property(object):
@@ -77,6 +78,7 @@ class KnowledgeBase_Property(object):
         self._value = value
         #add to history queue
         self._history.append(value)
+
 
 class KnowledgeBase_Action(object):
 
@@ -234,102 +236,136 @@ class KnowledgeBase(object):
         # List of detected objects log (for person detection)
         self._objectDetectedList = []
 
+        # List of lidar masks (for lidar occlusion detection)
+        self._lidar_masks = []
+
+        # List of lidar masks (for lidar occlusion detection)
+        self._prob_lidar_masks = []
+
         # List of robot odometry log
         self._robotOdometryList = []
-
 
         # List of Lidar Range
         self._robotScanList = []
 
+        # List of rotation directions
+        self._directions = []
+
     #------------------------------------------------------------------------------------------------
     # -------------------------------------INTERFACE FUNCTIONS---------------------------------------
     # ------------------------------------------------------------------------------------------------
-    def write(self,cls):
+    def write(self, data):
         """Function to write knowledge to the knowlegde base."""
         found = False
-        if isinstance(cls, Property):
-            for p in self._PropertyList:
-                if p.name == cls.name:
-                    found=True
-                    p.setProperty(cls.value)
+        
+        match data:
+            case Property():
+                for p in self._PropertyList:
+                    if p.name == data.name:
+                        found=True
+                        p.setProperty(data.value)
 
-            if not found:
-                kbp = KnowledgeBase_Property(name=cls.name,description=cls.description,value=cls.value,min=cls.min,max=cls.max,retention=1000)
-                self._PropertyList.append(kbp)
+                if not found:
+                    kbp = KnowledgeBase_Property(name=data.name,
+                        description=data.description, value=data.value, 
+                        min=data.min, max=data.max, retention=1000)
+                    self._PropertyList.append(kbp)
+            case ComponentStatus():
+                for s in self._statusList:
+                    if s.name == data.component:
+                        found = True
+                        s.setProperty(status=data.status,accuracy=data.accuracy)
 
-        elif isinstance(cls,ComponentStatus):
-            for s in self._statusList:
-                if s.name == cls.component:
-                    found = True
-                    s.setProperty(status=cls.status,accuracy=cls.accuracy)
+                if not found:
+                    kbs = KnowledgeBase_ComponentStatus(component=data.component, status=data.status, accuracy=data.accuracy, retention=1000)
+                    self._statusList.append(kbs)
+            case Action():
+                self._action = None
+                self._action = KnowledgeBase_Action(ID=data.ID,name=data.name,description=data.description,propertyList=data.propertyList)
+            case ObjectsStamped():
+                self._objectDetectedList.append(data)
+            case RobotPose():
+                self._robotOdometryList.append(data)
+            case LidarRange():
+                self._robotScanList.append(data)
+            case ProbLidarMask():
+                self._prob_lidar_masks.append(data)
+            case BoolLidarMask():
+                self._lidar_masks.append(data)
+            case list():
+                # A list of directions
+                self._directions.append(data)
+            case _:
+                raise ValueError("Unknown knowledge type")
 
-            if not found:
-                kbs = KnowledgeBase_ComponentStatus(component=cls.component, status=cls.status, accuracy=cls.accuracy, retention=1000)
-                self._statusList.append(kbs)
-
-        elif isinstance(cls,Action):
-            self._action = None
-            self._action = KnowledgeBase_Action(ID=cls.ID,name=cls.name,description=cls.description,propertyList=cls.propertyList)
-
-        elif isinstance(cls, ObjectsStamped):
-            self._objectDetectedList.append(cls)
-
-        elif isinstance(cls, RobotPose):
-            self._robotOdometryList.append(cls)
-
-        elif isinstance(cls,LidarRange): 
-            self._robotScanList.append(cls)
-
-
-    def read(self,name,queueSize):
+    def read(self, name, queueSize):
         """Function to read knowledge from the knowlegde base."""
         found = False
-        cls = None
+        data = None
         historyQueue = -1
         for p in self._PropertyList:
             if p.name == name:
                 found=True
-                cls = Property()
-                cls.name = p.name
-                cls.value = p.value
-                cls.description = p.description
-                cls.min = p.minimum
-                cls.max = p.maximum
+                data = Property()
+                data.name = p.name
+                data.value = p.value
+                data.description = p.description
+                data.min = p.minimum
+                data.max = p.maximum
 
                 historyQueue = p.history(queueSize)
 
         for s in self._statusList:
             if s.name == name:
                 found=True
-                cls = ComponentStatus()
-                cls.component = s.name
-                cls.status = s.status
-                cls.accuracy = s.accuracy
+                data = ComponentStatus()
+                data.component = s.name
+                data.status = s.status
+                data.accuracy = s.accuracy
 
                 historyQueue = s.history(queueSize)
 
         if self._action != None and name == self._action.ID:
             found = True
-            cls = Action()
-            cls.ID = self._action.ID
-            cls.name = self._action.name
-            cls.description = self._action.description
-            cls.propertyList = self._action.propertyList
-            cls.UUID = self._action.uuid
+            data = Action()
+            data.ID = self._action.ID
+            data.name = self._action.name
+            data.description = self._action.description
+            data.propertyList = self._action.propertyList
+            data.UUID = self._action.uuid
             historyQueue = -1
 
         if len(self._objectDetectedList) !=0 and name == self._objectDetectedList[0].name:
             found = True
-            cls = self._objectDetectedList[-1]  #provide the last detection knowledge
+            data = self._objectDetectedList[-1]  #provide the last detection knowledge
             historyQueue = self._objectDetectedList[-queueSize:]
+
+        if len(self._robotScanList) != 0 and name == self._robotScanList[0].name:
+            found = True
+            data = self._robotScanList[-1]  #provide the last detection knowledge
+            historyQueue = self._robotScanList[-queueSize:]
 
         if len(self._robotOdometryList) !=0 and name == self._robotOdometryList[0].name:
             found = True
-            cls = self._robotOdometryList[-1]  #provide the last odometry knowledge
+            data = self._robotOdometryList[-1]  #provide the last odometry knowledge
             historyQueue = self._robotOdometryList[-queueSize:]
 
+        if len(self._lidar_masks) != 0 and name == 'LidarMask':
+            found = True
+            data = self._lidar_masks[-1] 
+            historyQueue = self._lidar_masks[-queueSize:]
+
+        if len(self._prob_lidar_masks) != 0 and name == 'ProbLidarMask':
+            found = True
+            data = self._prob_lidar_masks[-1] 
+            historyQueue = self._prob_lidar_masks[-queueSize:]
+
+        if len(self._directions) != 0 and name == 'directions':
+            found = True
+            data = self._directions[-1] 
+            historyQueue = self._directions[-queueSize:]
 
         if not found:
             return -1,-1   #Property or ComponentStatus not found
         else:
-            return cls,historyQueue
+            return data,historyQueue

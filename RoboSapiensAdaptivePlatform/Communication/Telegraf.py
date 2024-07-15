@@ -58,12 +58,12 @@ class Telegraf(TriggeredNode):
                     poi.min = route["min"]
                     poi.max = route["max"]
                     self.knowledge.registerKnowledge(poi)
-                    self.logger.log("["+self._name+"] - "+"Data digested: " + poi.name + " with value:" + poi.value.__str__()+" - type:"+route["type"])
+                    # self.logger.log("["+self._name+"] - "+"Data digested: " + poi.name + " with value:" + poi.value.__str__()+" - type:"+route["type"])
 
                 else:   #if not a property, a class is passed as value
                     found = True
                     self.knowledge.registerKnowledge(value)
-                    self.logger.log("[" + self._name + "] - " + "Data digested: " + name + " passed as class - type:" +route["type"])
+                    # self.logger.log("[" + self._name + "] - " + "Data digested: " + name + " passed as class - type:" +route["type"])
 
         if not found:
             self.logger.log("["+self._name+"] - "+"Data digested FAILED: property "+ name+" not in telegraf gateway matrix")

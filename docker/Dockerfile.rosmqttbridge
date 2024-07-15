@@ -1,0 +1,79 @@
+# ROS
+ARG ROS_DISTRO=humble
+
+FROM osrf/ros:${ROS_DISTRO}-desktop as base
+ENV ROS_DISTRO=${ROS_DISTRO}
+SHELL ["/bin/bash", "-c"]
+
+# Install basic apt packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git libcanberra-gtk-module libcanberra-gtk3-module fuse3 libfuse2 libqt5svg5-dev \
+    python3-pip python3-opencv python3-tk python3-pyqt5.qtwebengine mesa-utils
+
+RUN apt-get update && apt-get install -y ros-humble-turtlebot4-desktop \ 
+    ros-humble-turtlebot4-simulator ros-humble-turtlebot4-viz \
+    ros-humble-turtlebot4-diagnostics ros-humble-rmw-cyclonedds-cpp
+
+
+RUN apt-get update && apt-get install -y --no-install-recommends tmux ros-dev-tools
+
+COPY docker/setup.bash /opt/setup.bash
+COPY docker/ros-entrypoint.sh /opt/entrypoint.sh
+
+ENTRYPOINT ["/opt/entrypoint.sh"]
+
+FROM base as dev
+
+# Dev container arguments
+ARG USERNAME=devuser
+ARG UID=1000
+ARG GID=${UID}
+
+# Install extra tools for development
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gdb gdbserver vim
+
+# Create new user and home directory
+RUN groupadd --gid $GID $USERNAME \
+    && useradd --uid ${GID} --gid ${UID} --create-home ${USERNAME} \
+    && echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME} \
+    && mkdir -p /home/${USERNAME} \
+    && chown -R ${UID}:${GID} /home/${USERNAME}
+
+RUN groupadd fuse \
+    && usermod -aG fuse,video ${USERNAME}
+
+# Set the user and source entrypoint in the user's .bashrc file
+RUN echo Defaults secure_path = /opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin > /etc/sudoers.d/secure_path \
+    && chmod 0440 /etc/sudoers.d/secure_path
+
+USER ${USERNAME}
+
+COPY --chown=${USERNAME} turtlebotrossim/scan_relay_ws/ /opt/scan_relay_ws/
+
+WORKDIR /opt/scan_relay_ws/
+
+RUN source /opt/ros/humble/setup.bash && \
+    colcon build --packages-select spin_interfaces
+
+WORKDIR /opt
+
+# Configure the bridge
+
+COPY --chown=${USERNAME} ROS2MQTTBridge /opt/ROS2MQTTBridge
+
+# Install additional Python modules
+RUN pip install --user paho-mqtt
+
+USER root
+COPY docker/ros-entrypoint.sh /opt/entrypoint.sh
+RUN chmod a+rx /opt/entrypoint.sh
+
+RUN echo "source /opt/entrypoint.sh" >> /root/.bashrc
+USER ${USERNAME}
+RUN echo "source /opt/entrypoint.sh" >> /home/${USERNAME}/.bashrc
+
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
+WORKDIR /opt/ROS2MQTTBridge
+CMD python3 ROS2MqttBridge.py

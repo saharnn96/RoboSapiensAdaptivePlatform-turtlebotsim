@@ -9,6 +9,7 @@
 import os
 import logging
 import yaml
+import time
 
 from RoboSapiensAdaptivePlatform.utils.constants import *
 from RoboSapiensAdaptivePlatform.Communication.Messages.messages import ComponentStatus
@@ -231,15 +232,15 @@ class TriggeredNode(Node):
 		:rtype: bool
 		"""
         if self._state == genericNodeStates.IDLE or self._state == genericNodeStates.INITIALIZED:
-            try:
-                self._state = genericNodeStates.RUNNING     #TODO Sahar: Push to the state management, state management stores state in list (per component) with timestamp
-                _status = self._SpinOnceFcn(args=args)
-                self._state = genericNodeStates.IDLE        #TODO Sahar: Push to the state management, state management stores state in list (per component) with timestamp
-                return _status
-            except Exception as e:
-                if self._verbose:print('Faillure reason: %s', repr(e))
-                self._state = genericNodeStates.IDLE
-                return False
+            # try:
+            self._state = genericNodeStates.RUNNING     #TODO Sahar: Push to the state management, state management stores state in list (per component) with timestamp
+            _status = self._SpinOnceFcn(args=args)
+            self._state = genericNodeStates.IDLE        #TODO Sahar: Push to the state management, state management stores state in list (per component) with timestamp
+            return _status
+            # except Exception as e:
+            #     if self._verbose:print('Faillure reason: %s', repr(e))
+            #     self._state = genericNodeStates.IDLE
+            #     return False
         else:
             self._state = genericNodeStates.IDLE
             if self._verbose: print("ERROR - adaptation node not initialized")
@@ -487,7 +488,8 @@ class OrchestratorNode(TriggeredNode):
         if self._orchestrationStatus == orchestrationStatus.WAITING_FOR_ACTION_COMPLETE:
             # TODO: ADAPTATION MANAGEMENT NEEDS TO RELEASE FROM THIS STATE??
             # PROPOSAL: RETURN TO MONITORING WHEN ANOMALY IS GONE
-            status_M, history_M = self.knowledge.read(name=adaptivityComponents.MONITOR, queueSize=1)
-            if status_M.status == monitorStatus.NORMAL:
-                self._orchestrationStatus = orchestrationStatus.MONITORING
+            # status_M, history_M = self.knowledge.read(name=adaptivityComponents.MONITOR, queueSize=1)
+            # if status_M.status == monitorStatus.NORMAL:
+            time.sleep(3)
+            self._orchestrationStatus = orchestrationStatus.MONITORING
 

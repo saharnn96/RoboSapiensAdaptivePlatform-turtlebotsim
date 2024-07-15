@@ -7,7 +7,7 @@
 # * permission of Bert Van Acker
 # **********************************************************************************
 from threading import Thread,Lock,Timer,Event
-
+import traceback
 
 class perpetualTimer():
 
@@ -43,7 +43,8 @@ class StoppableThread(Thread):
             self._runFcn()
          except:
             print("ERROR - function execution failed!")
-         pass
+            print(traceback.format_exc())
+         # pass
 
    def _runFcn(self):
      print("RUNNING THREAD")
