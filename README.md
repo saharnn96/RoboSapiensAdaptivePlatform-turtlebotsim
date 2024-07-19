@@ -1,22 +1,24 @@
 # RoboSapiensAdaptivePlatform-turtlebotsim
 
-Download the EMQX from the link : https://www.emqx.io/get-started
+Run the Turtlebot4 gazebo simulator using Robosapiense Adaptive Platform 
 
-# RUN mqtt broker 
+# RUN The gazebo simulator Docker file 
 
 ```bash 
-sudo systemctl start emqx
+cd docker 
 ```
-## Example mqtt payload
-{
-    "_ID": "adaptationtype",
-    "_UUID": "tbd",
-    "_description": "SPEED ADAPTATION",
-    "_propertyList": [
-        {
-            "description": "Slow down robot",
-            "name": "target_speed",
-            "value": 5.0
-        }
-    ]
-}
+if you have nvidia graphic use:
+
+```bash 
+docker compose up simdeploynvidia
+```
+otherwise: 
+```bash 
+docker compose up simdeploymesa
+```
+Then use ctrl+shift+P and run "Rebuild and Reopen in container" to run the code in the dev container 
+
+In terminal run : 
+```bash 
+python3 RaP_Lidar_Occlusion.py
+```
