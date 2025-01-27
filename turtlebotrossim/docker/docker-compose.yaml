@@ -105,6 +105,9 @@ services:
   simdeploynvidia:
     extends: deploynvidia
     command: ros2 launch demo_bringup sim_demo_tb4.launch.py
+  simdeploymesatb3:
+    extends: deploymesa
+    command: ros2 launch demo_bringup sim_demo_tb3.launch.py
   rvizlivenvidia:
     extends: devnvidia
     command: ros2 launch turtlebot4_viz view_robot.launch.py

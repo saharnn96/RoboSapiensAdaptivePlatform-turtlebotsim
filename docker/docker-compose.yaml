@@ -59,13 +59,13 @@ services:
       - /dev/shm:/dev/shm
   devfullnogpu:
     extends: rapdevnogpu
-    depends_on: simnogpu rosmqttbridge emqx
+    depends_on: [ simnogpu, rosmqttbridge, emqx ]
   devfulldevmesa:
     extends: rapdevmesa
-    depends_on: simmesa rosmqttbridge emqx
+    depends_on: [ simmesa, rosmqttbridge, emqx ]
   devfullnvidia:
     extends: rapdevnvidia
-    depends_on: simnvidia rosmqttbridge emqx
+    depends_on: [ simnvidia, rosmqttbridge, emqx ]
 
 volumes:
   vol-emqx-data:
